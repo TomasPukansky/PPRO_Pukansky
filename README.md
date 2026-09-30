@@ -143,16 +143,25 @@ graph TD
 
 - **Pravidlo závislostí:** Vyšší vrstvy závisejí na nižších. Doménová vrstva neobsahuje žádné HTTP závislosti ani přímé SQL dotazy.
 
-### 4.2 Relační databáze a migrace
-- Databáze: **PostgreSQL** provozovaná v Docker kontejneru.
-- Správa schématu: Schéma je verzováno pomocí migračních souborů. Žádné změny schématu se neprovádějí manuálně.
+### 4.2 Zvolený technologický stack
+- **Jazyk & Platforma:** Java 21 (Eclipse Temurin)
+- **Aplikační framework:** Spring Boot 3.3.4
+  - `spring-boot-starter-web` (REST API & statické servírování UI)
+  - `spring-boot-starter-data-jpa` (Spring Data JPA / Hibernate)
+  - `spring-boot-starter-validation` (Jakarta Validation pro DTO)
+- **Databáze:** PostgreSQL 16 (v Docker kontejneru)
+- **Verzování schématu:** Flyway migrace (`src/main/resources/db/migration/`)
+- **Klientské rozhraní:** Responzivní webový dashboard (HTML5, Vanilla CSS, JavaScript) servírovaný přímo ze Spring Bootu na portu `8080`.
+- **Testování:** JUnit 5, Mockito, H2 in-memory DB pro testovací profil.
 
-### 4.3 Orchestrace přes Docker Compose
-Projekt je spustitelný jediným příkazem:
-```bash
-docker compose up --build
-```
-Tento příkaz inicializuje databázi, aplikuje migrace a spustí backend i aplikační rozhraní.
+### 4.3 REST API rozhraní (MVP Demo pro klienta)
+| Metoda | Endpoint | Popis |
+|---|---|---|
+| `GET` | `/api/items` | Seznam kusů inventáře (volitelné query parametry: `categoryId`, `status`) |
+| `GET` | `/api/items/{id}` | Detail konkrétního kusu vybavení |
+| `POST` | `/api/items` | Zaevidování nového kusu vybavení do inventáře |
+| `PATCH` | `/api/items/{id}/status` | Změna stavu kusu (např. odeslání do servisu / ukončení servisu) |
+| `GET` | `/api/categories` | Číselník kategorií vybavení |
 
 ---
 
@@ -263,24 +272,28 @@ erDiagram
 ## 6. Instalace a spuštění
 
 ### Požadavky
-- [Docker](https://www.docker.com/) a [Docker Compose](https://docs.docker.com/compose/)
+- [Docker Desktop](https://www.docker.com/) a [Docker Compose](https://docs.docker.com/compose/)
 - [Git](https://git-scm.com/)
+
+*(Pozn.: Na hostitelském počítači není nutné mít nainstalovanou Javu ani Maven; multi-stage Dockerfile provede kompilaci a spuštění izolovaně uvnitř kontejneru).*
 
 ### Krok za krokem
 1. Naklonujte repozitář:
    ```bash
-   git clone <URL_REPOZITARE>
+   git clone https://github.com/TomasPukansky/AI_is_the_way.git
    cd AI_is_the_way
    ```
 2. Nastavte si lokální git hooky (pokud nejsou automaticky aktivní):
    ```bash
    git config core.hooksPath .githooks
    ```
-3. Spusťte celý projekt v Dockeru:
+3. Spusťte celou aplikaci včetně PostgreSQL a migrací:
    ```bash
    docker compose up --build
    ```
-4. Aplikace a dokumentační rozhraní budou dostupné na nastavených portech (bude specifikováno při implementaci aplikačního serveru).
+4. Otevřete webový prohlížeč na adrese:
+   - **Klientský dashboard (Sobotní pult):** [http://localhost:8080](http://localhost:8080)
+   - **REST API:** [http://localhost:8080/api/items](http://localhost:8080/api/items)
 
 ---
 
@@ -288,11 +301,12 @@ erDiagram
 
 Pro zajištění stability klíčových obchodních pravidel projekt zahrnuje:
 
-1. **Unit testy doménových pravidel**:
-   - Detekce a zákaz časového překryvu dvou rezervací pro stejný `EquipmentItem`.
-   - Zákaz výpůjčky kusu se statusem `IN_SERVICE`.
-   - Správný výpočet víkendové sazby (od pátku odpoledne jako 2 dny).
-   - Přesný výpočet penále za každý započatý den zpoždění na položkách, které nebyly včas vráceny.
+1. **Unit testy doménových pravidel (`EquipmentBusinessRulesTest`)**:
+   - Ověření unikátnosti inventárního čísla (zákaz duplicit v inventáři).
+   - Zákaz přímého zapůjčení kusu, který je v servisu (`IN_SERVICE`).
+   - Zákaz rezervace kusu v servisu.
+   - Zákaz přímého odeslání do servisu u kusu, který je právě zapůjčen zákazníkovi (bez předchozího vrácení).
+   - Úspěšný přechod volného kusu do servisu se záznamem důvodu a následný bezpečný návrat do provozu.
 2. **Integrační testy**:
    - Průchod celým životním cyklem: Telefonická rezervace $\rightarrow$ automatická alokace $\rightarrow$ sobotní výdej $\rightarrow$ částečné vrácení $\rightarrow$ zaznamenání poškození a stržení z kauce $\rightarrow$ uzavření objednávky.
 
@@ -300,7 +314,15 @@ Pro zajištění stability klíčových obchodních pravidel projekt zahrnuje:
 
 ## 8. Deník postupu a změn (Changelog)
 
-- **2026-09-30**:
+- **2026-09-30 (Implementace MVP dema pro klienta)**:
+  - Volba technologického stacku: **Java 21 + Spring Boot 3.3.4 + Flyway + PostgreSQL 16**.
+  - Zavedení 3-vrstvé architektury (Controllers, Services, Repositories).
+  - Vytvoření Flyway migrací `V1__create_equipment_tables.sql` a `V2__seed_demo_equipment.sql` se syntetickými daty lyží, snowboardů, bot a lodí.
+  - Implementace doménových pravidel a validací pro `EquipmentItem` (blokace kusů v servisu, prevence duplicitních inventárních čísel).
+  - Vytvoření sady jednotkových testů `EquipmentBusinessRulesTest`.
+  - Vytvoření klientského webového rozhraní (Sobotní ráno dispečink, přehled volných kusů, filtrování, odesílání do servisu a návrat).
+  - Vytvoření multi-stage `Dockerfile` a `docker-compose.yml`.
+- **2026-09-30 (Inicializace)**:
   - Výběr **Zadání D: Půjčovna vybavení (Hory a voda)**.
   - Vytvoření [AGENTS.md](file:///c:/Users/mento/Documents/skola/PRPA/AI_is_the_way/AGENTS.md) s pravidly pro AI asistenta (zákaz push bez svolení, povinný parametr `-m`, udržování SSOT dokumentace).
   - Vytvoření pre-commit hooku v `.githooks/pre-commit` a aktivace přes `core.hooksPath`.

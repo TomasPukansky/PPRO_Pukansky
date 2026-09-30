@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hory a voda – Půjčovna vybavení | Sobotní ranní pult</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-icon">🏔️⛷️</div>
+                <div class="brand-text">
+                    <h1>Hory a voda <span class="tag">Půjčovna vybavení</span></h1>
+                    <p class="subtitle">Sobotní ranní dispečink a evidence konkrétních kusů (Martin Řehák)</p>
+                </div>
+            </div>
+            <div class="stats-ribbon">
+                <div class="stat-card" id="stat-total">
+                    <span class="stat-val">0</span>
+                    <span class="stat-lbl">Celkem kusů</span>
+                </div>
+                <div class="stat-card stat-available" id="stat-available">
+                    <span class="stat-val">0</span>
+                    <span class="stat-lbl">Volné k výpůjčce</span>
+                </div>
+                <div class="stat-card stat-service" id="stat-service">
+                    <span class="stat-val">0</span>
+                    <span class="stat-lbl">V servisu</span>
+                </div>
+                <div class="stat-card stat-other" id="stat-other">
+                    <span class="stat-val">0</span>
+                    <span class="stat-lbl">Půjčeno / Rezervováno</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Control bar with client's requested "Sobotní ráno" button -->
+        <section class="controls-section">
+            <div class="controls-left">
+                <button class="btn btn-special" id="btn-saturday-mode" title="Zobrazit pouze kusy ihned k dispozici pro sobotní frontu">
+                    ⚡ Sobotní ráno: Pouze volné kusy
+                </button>
+                <div class="filter-group">
+                    <label for="filter-category">Kategorie:</label>
+                    <select id="filter-category">
+                        <option value="">Všechny kategorie</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-status">Stav:</label>
+                    <select id="filter-status">
+                        <option value="">Všechny stavy</option>
+                        <option value="AVAILABLE">Volné k výpůjčce</option>
+                        <option value="IN_SERVICE">V servisu (nepůjčovat)</option>
+                        <option value="RENTED">Půjčeno</option>
+                        <option value="RESERVED">Rezervováno</option>
+                        <option value="RETIRED">Vyřazeno</option>
+                    </select>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="input-search" placeholder="Hledat číslo (SKI-001) nebo velikost...">
+                </div>
+            </div>
+            <div class="controls-right">
+                <button class="btn btn-primary" id="btn-open-create-modal">
+                    + Zaevidovat nový kus
+                </button>
+            </div>
+        </section>
+
+        <!-- Notification banner for user feedback -->
+        <div id="toast-message" class="toast hidden"></div>
+
+        <!-- Equipment Grid -->
+        <section class="inventory-section">
+            <div class="section-header">
+                <h2 id="section-title">Přehled inventáře</h2>
+                <span class="count-badge" id="visible-count">Načítám...</span>
+            </div>
+            <div class="cards-grid" id="cards-grid">
+                <!-- Dynamicky generováno pomocí JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for adding new equipment item -->
+    <div class="modal-overlay hidden" id="modal-create">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Zaevidovat nový kus vybavení</h3>
+                <button class="btn-close" id="btn-close-modal">&times;</button>
+            </div>
+            <form id="form-create-item">
+                <div class="form-group">
+                    <label for="create-category">Kategorie vybavení *</label>
+                    <select id="create-category" required>
+                        <option value="">-- Vyberte kategorii --</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="create-inv-number">Inventární číslo * (nahrazuje lihovku)</label>
+                        <input type="text" id="create-inv-number" placeholder="např. SKI-010" required maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="create-size">Velikost / Parametr *</label>
+                        <input type="text" id="create-size" placeholder="např. 175 cm / 43 EU" required maxlength="50">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="create-year">Rok pořízení *</label>
+                        <input type="number" id="create-year" value="2024" min="1990" max="2030" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="create-status">Počáteční stav *</label>
+                        <select id="create-status">
+                            <option value="AVAILABLE">Volné k výpůjčce</option>
+                            <option value="IN_SERVICE">V servisu (příprava hran/vosk)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="create-condition">Stav a popis opotřebení *</label>
+                    <input type="text" id="create-condition" placeholder="např. Nový pár z prodejny, nabroušeno na 88°" required maxlength="255">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Zrušit</button>
+                    <button type="submit" class="btn btn-primary">Uložit do inventáře</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for sending item to service -->
+    <div class="modal-overlay hidden" id="modal-service">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Odeslat kus do servisu</h3>
+                <button class="btn-close" id="btn-close-service-modal">&times;</button>
+            </div>
+            <form id="form-service-item">
+                <input type="hidden" id="service-item-id">
+                <p id="service-item-info" class="modal-info-text"></p>
+                <div class="form-group">
+                    <label for="service-reason">Důvod odeslání do servisu (např. servis hran, poškrábaná skluznice):</label>
+                    <input type="text" id="service-reason" placeholder="např. Broušení hran, oprava vázání" required maxlength="150">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-service-modal">Zrušit</button>
+                    <button type="submit" class="btn btn-danger">Potvrdit a zablokovat pro výpůjčky</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <p>Semestrální projekt <strong>Pokročilé programování (PPRO)</strong> | FIM UHK (ZS 2026/2027) | Zadání D: Půjčovna vybavení</p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
