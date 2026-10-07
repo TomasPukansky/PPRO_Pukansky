@@ -58,11 +58,21 @@ Při návrhu a psaní kódu musí asistent dodržovat povinné minimum stanoven�
 4. **Testy**:
    - Jednotkové (unit) testy pro klíčová obchodní pravidla (překrývání termínů, servisní blokace, ceník a výpočet penále).
    - Integrační testy ověřující průchod základních procesů.
-5. **Jednoduché spuštění**:
+5. **Jednoduché spuštění a Docker pravidla**:
    - Celé prostředí (aplikace, databáze, migrace, případný seed dat) musí jít nastartovat jediným příkazem:
      ```bash
      docker compose up --build
      ```
+   - **Izolace a bezpečnost kontejnerů**:
+     - Používat výhradně vlastní jmenný prostor `name: ppro-rental` v `docker-compose.yml`.
+     - Kontejnery `rental-postgres`, `rental-app`, vlastní síť a volume `postgres_data`.
+     - 🛑 **Striktní zákaz dotýkat se projektu `eshop`**: Kontejnery, sítě a volume `eshop-*` (např. `eshop-php/stena`, `eshop-nginx-1`, `eshop-db-1`, `eshop_default`, `eshop_composer_cache`) se NIKDY nesmí spouštět, zastavovat, mazat ani používat.
+     - 🛑 **Zákaz hromadných příkazů**: Nikdy nespouštět `docker system prune`, `docker container prune` ani `docker volume prune`.
+     - Pro úklid/vypnutí používat výhradně:
+       ```bash
+       docker compose -p ppro-rental down
+       ```
+     - Případný dočasný testovací kontejner spouštět s parametrem `--rm` a vlastním názvem, např. `--name ppro-rental-maven`.
 6. **Bezpečnost a syntetická data**:
    - Žádná reálná osobní data, žádné citlivé přihlašovací údaje v repozitáři (používat `.env.example`). Data jsou syntetická.
 
