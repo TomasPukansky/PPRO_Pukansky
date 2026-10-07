@@ -3,27 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hory a voda – Půjčovna vybavení | Sobotní ranní pult</title>
+    <title>Hory a voda – Půjčovna vybavení | Informační systém</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <header class="app-header">
+    <!-- App Header -->
+    <header class="app-header no-print">
         <div class="header-container">
             <div class="brand">
                 <div class="brand-icon">🏔️⛷️</div>
                 <div class="brand-text">
                     <h1>Hory a voda <span class="tag">Půjčovna vybavení</span></h1>
-                    <p class="subtitle">Sobotní ranní dispečink a evidence konkrétních kusů (Martin Řehák)</p>
+                    <p class="subtitle">Dispečink půjčovny, rezervace & správa inventáře (Martin Řehák)</p>
                 </div>
             </div>
             <div class="stats-ribbon">
-                <div class="stat-card" id="stat-total">
-                    <span class="stat-val">0</span>
-                    <span class="stat-lbl">Celkem kusů</span>
-                </div>
                 <div class="stat-card stat-available" id="stat-available">
                     <span class="stat-val">0</span>
                     <span class="stat-lbl">Volné k výpůjčce</span>
@@ -32,65 +29,357 @@
                     <span class="stat-val">0</span>
                     <span class="stat-lbl">V servisu</span>
                 </div>
-                <div class="stat-card stat-other" id="stat-other">
+                <div class="stat-card stat-other" id="stat-rented">
                     <span class="stat-val">0</span>
-                    <span class="stat-lbl">Půjčeno / Rezervováno</span>
+                    <span class="stat-lbl">Venku u zákazníků</span>
+                </div>
+                <div class="stat-card stat-danger" id="stat-overdue">
+                    <span class="stat-val">0</span>
+                    <span class="stat-lbl">Po termínu!</span>
                 </div>
             </div>
         </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="main-nav">
+            <button class="nav-tab active" data-tab="tab-saturday">⚡ Sobota ráno (Dispečink)</button>
+            <button class="nav-tab" data-tab="tab-phone-reservation">📞 Rezervace po telefonu</button>
+            <button class="nav-tab" data-tab="tab-orders">📋 Výdej & Vrácení</button>
+            <button class="nav-tab" data-tab="tab-inventory">🎿 Inventář & Servis</button>
+            <button class="nav-tab" data-tab="tab-customers">👥 Zákazníci</button>
+            <button class="nav-tab" data-tab="tab-reports">📊 Přehledy pro klienta</button>
+            <button class="nav-tab" data-tab="tab-pricing">💰 Ceník</button>
+        </nav>
     </header>
 
+    <!-- Notification Toast -->
+    <div id="toast-message" class="toast hidden no-print"></div>
+
+    <!-- Main Content Container -->
     <main class="main-content">
-        <!-- Control bar with client's requested "Sobotní ráno" button -->
-        <section class="controls-section">
-            <div class="controls-left">
-                <button class="btn btn-special" id="btn-saturday-mode" title="Zobrazit pouze kusy ihned k dispozici pro sobotní frontu">
-                    ⚡ Sobotní ráno: Pouze volné kusy
-                </button>
-                <div class="filter-group">
-                    <label for="filter-category">Kategorie:</label>
-                    <select id="filter-category">
-                        <option value="">Všechny kategorie</option>
-                    </select>
+
+        <!-- ================= TAB 1: SOBOTA RÁNO (DISPEČINK) ================= -->
+        <section id="tab-saturday" class="tab-pane active">
+            <div class="pane-header">
+                <div>
+                    <h2>⚡ Sobotní ranní dispečink</h2>
+                    <p class="pane-desc">Kompletní přehled na jedné obrazovce: okamžitá kapacita skladu, dnešní výdeje a vrácení.</p>
+                </div>
+                <div class="pane-actions">
+                    <button class="btn btn-warning" id="btn-expire-unclaimed" title="Stornuje nevyzvednuté rezervace a uvolní kusy pro frontu">
+                        ⏰ Zrušit nevyzvednuté rezervace (po 10:00)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Matice dostupnosti: Kategorie x Velikost -->
+            <div class="matrix-card">
+                <div class="matrix-header">
+                    <h3>Matice volných kusů k okamžitému půjčení</h3>
+                    <div class="matrix-date-select">
+                        <label for="matrix-date">Datum:</label>
+                        <input type="date" id="matrix-date">
+                    </div>
+                </div>
+                <div id="matrix-container" class="matrix-table-wrap">
+                    <p class="loading-text">Načítám matici volných kapacit...</p>
+                </div>
+            </div>
+
+            <!-- Dvě sekce: Dnešní výdeje a Dnešní očekávaná vrácení -->
+            <div class="two-cols-grid">
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>📦 Dnešní rezervace k vyzvednutí</h3>
+                        <span class="count-badge" id="saturday-pickups-count">0</span>
+                    </div>
+                    <div id="saturday-pickups-list" class="order-mini-list">
+                        <!-- Plněno přes JS -->
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>↩️ Očekávaná vrácení</h3>
+                        <span class="count-badge" id="saturday-returns-count">0</span>
+                    </div>
+                    <div id="saturday-returns-list" class="order-mini-list">
+                        <!-- Plněno přes JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: REZERVACE PO TELEFONU ================= -->
+        <section id="tab-phone-reservation" class="tab-pane">
+            <div class="pane-header">
+                <div>
+                    <h2>📞 Telefonická rezervace (Scénář „Úterý telefonát“)</h2>
+                    <p class="pane-desc">Rychlé zadání zákazníka podle telefonu, termínu a typu vybavení. Systém automaticky alokuje konkrétní volný kus.</p>
+                </div>
+            </div>
+
+            <div class="reservation-form-container">
+                <form id="form-phone-reservation">
+                    <div class="form-section-box">
+                        <h4>1. Zákazník</h4>
+                        <div class="form-row">
+                            <div class="form-group flex-2">
+                                <label for="res-phone">Telefon zákazníka * (vyhledá v DB nebo založí)</label>
+                                <div class="input-with-btn">
+                                    <input type="text" id="res-phone" placeholder="+420 777 123 456" required>
+                                    <button type="button" class="btn btn-secondary" id="btn-lookup-phone">Ověřit telefon</button>
+                                </div>
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="res-firstname">Jméno *</label>
+                                <input type="text" id="res-firstname" required placeholder="Jan">
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="res-lastname">Příjmení *</label>
+                                <input type="text" id="res-lastname" required placeholder="Novák">
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="res-idcard">Číslo dokladu (OP) *</label>
+                                <input type="text" id="res-idcard" required placeholder="123456789">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section-box">
+                        <h4>2. Termín výpůjčky</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="res-start">Od (datum a čas) *</label>
+                                <input type="datetime-local" id="res-start" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="res-end">Do (datum a čas) *</label>
+                                <input type="datetime-local" id="res-end" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="res-quick-dates">Rychlé volby:</label>
+                                <div class="quick-buttons">
+                                    <button type="button" class="btn btn-sm btn-secondary" id="btn-set-weekend">Tento víkend (Pá 14:00 - Ne 18:00)</button>
+                                    <button type="button" class="btn btn-sm btn-secondary" id="btn-set-tomorrow">Zítra na 1 den</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section-box">
+                        <h4>3. Požadované vybavení (Kategorie & Velikost)</h4>
+                        <p class="form-hint">Zákazník po telefonu řekne např. „lyže 170 cm a boty 42“. Systém sám najde volný kus bez kolizí.</p>
+                        <div id="reservation-items-container">
+                            <div class="reservation-item-row" data-index="0">
+                                <select class="res-item-category" required>
+                                    <option value="">-- Vyberte kategorii --</option>
+                                </select>
+                                <input type="text" class="res-item-size" placeholder="Velikost (např. 170 cm)" required>
+                                <button type="button" class="btn btn-sm btn-danger btn-remove-res-item">&times; Odebrat</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-add-res-item">+ Přidat další kus do setu</button>
+                    </div>
+
+                    <div class="form-section-box">
+                        <h4>4. Sleva a poznámka</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="res-discount">Ruční sleva (Kč) – „to je moje věc“</label>
+                                <input type="number" id="res-discount" value="0" min="0" step="10">
+                            </div>
+                            <div class="form-group flex-2">
+                                <label for="res-note">Interní poznámka</label>
+                                <input type="text" id="res-note" placeholder="např. Volal v úterý, dorazí v sobotu ráno">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">💾 Vytvořit rezervaci a alokovat kusy</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: VÝDEJ & VRÁCENÍ ================= -->
+        <section id="tab-orders" class="tab-pane">
+            <div class="pane-header">
+                <div>
+                    <h2>📋 Správa objednávek (Výdej & Vrácení)</h2>
+                    <p class="pane-desc">Kompletní životní cyklus: výdej se složenou kaucí, výměna kusu (swap), částečné vrácení a penalizace.</p>
                 </div>
                 <div class="filter-group">
-                    <label for="filter-status">Stav:</label>
-                    <select id="filter-status">
+                    <label for="filter-order-status">Filtrovat stav:</label>
+                    <select id="filter-order-status">
                         <option value="">Všechny stavy</option>
-                        <option value="AVAILABLE">Volné k výpůjčce</option>
-                        <option value="IN_SERVICE">V servisu (nepůjčovat)</option>
-                        <option value="RENTED">Půjčeno</option>
-                        <option value="RESERVED">Rezervováno</option>
-                        <option value="RETIRED">Vyřazeno</option>
+                        <option value="RESERVATION" selected>Rezervace (k vyzvednutí)</option>
+                        <option value="ACTIVE">Aktivní výpůjčky (venku)</option>
+                        <option value="CLOSED">Uzavřené</option>
+                        <option value="EXPIRED">Propadlé (expirované)</option>
+                        <option value="CANCELLED">Zrušené</option>
                     </select>
+                </div>
+            </div>
+
+            <div id="orders-list-container" class="orders-accordion">
+                <!-- Plněno přes JS -->
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: INVENTÁŘ & SERVIS ================= -->
+        <section id="tab-inventory" class="tab-pane">
+            <div class="pane-header">
+                <div>
+                    <h2>🎿 Inventář a servisní dílna</h2>
+                    <p class="pane-desc">Evidence konkrétních inventárních kusů (nahrazuje lihovku) a přehled servisních zásahů.</p>
+                </div>
+                <button class="btn btn-primary" id="btn-open-create-modal">+ Zaevidovat nový kus</button>
+            </div>
+
+            <!-- Controls bar -->
+            <div class="controls-section">
+                <div class="controls-left">
+                    <div class="filter-group">
+                        <label for="filter-category">Kategorie:</label>
+                        <select id="filter-category">
+                            <option value="">Všechny kategorie</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-status">Stav:</label>
+                        <select id="filter-status">
+                            <option value="">Všechny stavy</option>
+                            <option value="AVAILABLE">Volné k výpůjčce</option>
+                            <option value="IN_SERVICE">V servisu (blokováno)</option>
+                            <option value="RENTED">Půjčeno zákazníkovi</option>
+                            <option value="RESERVED">Rezervováno</option>
+                        </select>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" id="input-search" placeholder="Hledat číslo (SKI-001) nebo velikost...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-grid" id="cards-grid">
+                <!-- Plněno přes JS -->
+            </div>
+        </section>
+
+        <!-- ================= TAB 5: ZÁKAZNÍCI ================= -->
+        <section id="tab-customers" class="tab-pane">
+            <div class="pane-header">
+                <div>
+                    <h2>👥 Databáze zákazníků</h2>
+                    <p class="pane-desc">Přehled stálých i nových klientů půjčovny Hory a voda.</p>
                 </div>
                 <div class="search-box">
-                    <input type="text" id="input-search" placeholder="Hledat číslo (SKI-001) nebo velikost...">
+                    <input type="text" id="input-search-customers" placeholder="Hledat zákazníka (příjmení, telefon)...">
                 </div>
             </div>
-            <div class="controls-right">
-                <button class="btn btn-primary" id="btn-open-create-modal">
-                    + Zaevidovat nový kus
-                </button>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Jméno a Příjmení</th>
+                            <th>Telefon</th>
+                            <th>Číslo dokladu</th>
+                            <th>Poznámka</th>
+                            <th>Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-table-body">
+                        <!-- Plněno přes JS -->
+                    </tbody>
+                </table>
             </div>
         </section>
 
-        <!-- Notification banner for user feedback -->
-        <div id="toast-message" class="toast hidden"></div>
-
-        <!-- Equipment Grid -->
-        <section class="inventory-section">
-            <div class="section-header">
-                <h2 id="section-title">Přehled inventáře</h2>
-                <span class="count-badge" id="visible-count">Načítám...</span>
+        <!-- ================= TAB 6: PŘEHLEDY PRO KLIENTA ================= -->
+        <section id="tab-reports" class="tab-pane">
+            <div class="pane-header">
+                <div>
+                    <h2>📊 Přehledy a statistiky pro pana Řeháka</h2>
+                    <p class="pane-desc">Klíčové manažerské podklady pro rozhodování o obměně vybavení a kontrolu zpoždění.</p>
+                </div>
             </div>
-            <div class="cards-grid" id="cards-grid">
-                <!-- Dynamicky generováno pomocí JS -->
+
+            <div class="reports-container">
+                <!-- Report: Co mělo být vráceno a není (Prodlení) -->
+                <div class="report-box danger-box">
+                    <h3>⚠️ Vybavení po termínu (Prodlení a penále)</h3>
+                    <div id="report-overdue-list">
+                        <p class="loading-text">Načítám zpožděné výpůjčky...</p>
+                    </div>
+                </div>
+
+                <!-- Report: Co je právě v servisu -->
+                <div class="report-box warning-box">
+                    <h3>🛠️ Vybavení v servisu (Odstávky)</h3>
+                    <div id="report-service-list">
+                        <p class="loading-text">Načítám servisované kusy...</p>
+                    </div>
+                </div>
+
+                <!-- Report: Četnost půjčování kusů -->
+                <div class="report-box">
+                    <h3>📈 Četnost výpůjček jednotlivých kusů (Podklad: co dokoupit / co vyřadit)</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Inv. číslo</th>
+                                    <th>Kategorie</th>
+                                    <th>Velikost</th>
+                                    <th>Stav</th>
+                                    <th>Počet výpůjček</th>
+                                    <th>Generovaný příjem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-usage-table-body">
+                                <!-- Plněno přes JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
+
+        <!-- ================= TAB 7: CENÍK ================= -->
+        <section id="tab-pricing" class="tab-pane">
+            <div class="pane-header">
+                <div>
+                    <h2>💰 Ceník půjčovny</h2>
+                    <p class="pane-desc">Denní sazby a víkendové balíčky (počítané od pátku 14:00 do neděle/pondělí).</p>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Kategorie</th>
+                            <th>Denní sazba (Kč/den)</th>
+                            <th>Víkendový balíček (Kč za 2 dny od Pá 14:00)</th>
+                            <th>Doporučená kauce (Kč)</th>
+                            <th>Platnost od</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pricing-table-body">
+                        <!-- Plněno přes JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </main>
 
-    <!-- Modal for adding new equipment item -->
+    <!-- ================= MODALS ================= -->
+
+    <!-- Modal 1: Zaevidovat nový kus inventáře -->
     <div class="modal-overlay hidden" id="modal-create">
         <div class="modal">
             <div class="modal-header">
@@ -129,7 +418,7 @@
                 </div>
                 <div class="form-group">
                     <label for="create-condition">Stav a popis opotřebení *</label>
-                    <input type="text" id="create-condition" placeholder="např. Nový pár z prodejny, nabroušeno na 88°" required maxlength="255">
+                    <input type="text" id="create-condition" placeholder="např. Nový pár z prodejny, skluznice v pořádku" required maxlength="255">
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Zrušit</button>
@@ -139,30 +428,124 @@
         </div>
     </div>
 
-    <!-- Modal for sending item to service -->
-    <div class="modal-overlay hidden" id="modal-service">
+    <!-- Modal 2: Výdej objednávky (Handout) -->
+    <div class="modal-overlay hidden" id="modal-handout">
         <div class="modal">
             <div class="modal-header">
-                <h3>Odeslat kus do servisu</h3>
-                <button class="btn-close" id="btn-close-service-modal">&times;</button>
+                <h3>Vydat objednávku zákazníkovi u pultu</h3>
+                <button class="btn-close" id="btn-close-handout">&times;</button>
             </div>
-            <form id="form-service-item">
-                <input type="hidden" id="service-item-id">
-                <p id="service-item-info" class="modal-info-text"></p>
+            <form id="form-handout">
+                <input type="hidden" id="handout-order-id">
+                <p id="handout-info" class="modal-info-text"></p>
                 <div class="form-group">
-                    <label for="service-reason">Důvod odeslání do servisu (např. servis hran, poškrábaná skluznice):</label>
-                    <input type="text" id="service-reason" placeholder="např. Broušení hran, oprava vázání" required maxlength="150">
+                    <label for="handout-deposit">Složená hotovostní kauce (Kč) *</label>
+                    <input type="number" id="handout-deposit" required min="0" step="100">
+                </div>
+                <div class="form-group">
+                    <label for="handout-discount">Dodatečná sleva u pultu (Kč)</label>
+                    <input type="number" id="handout-discount" value="0" min="0" step="50">
+                </div>
+                <div class="form-group">
+                    <label for="handout-note">Poznámka k výdeji</label>
+                    <input type="text" id="handout-note" placeholder="např. Složena hotovost 1500 Kč">
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="btn-cancel-service-modal">Zrušit</button>
-                    <button type="submit" class="btn btn-danger">Potvrdit a zablokovat pro výpůjčky</button>
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-handout">Zrušit</button>
+                    <button type="submit" class="btn btn-primary">✅ Potvrdit výdej a předat vybavení</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <footer class="app-footer">
-        <p>Semestrální projekt <strong>Pokročilé programování (PPRO)</strong> | FIM UHK (ZS 2026/2027) | Zadání D: Půjčovna vybavení</p>
+    <!-- Modal 3: Výměna kusu (Swap) u pultu -->
+    <div class="modal-overlay hidden" id="modal-swap">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Výměna alokovaného kusu</h3>
+                <button class="btn-close" id="btn-close-swap">&times;</button>
+            </div>
+            <form id="form-swap">
+                <input type="hidden" id="swap-order-id">
+                <input type="hidden" id="swap-rental-item-id">
+                <p id="swap-info" class="modal-info-text"></p>
+                <div class="form-group">
+                    <label for="swap-new-item">Vyberte náhradní volný kus:</label>
+                    <select id="swap-new-item" required>
+                        <!-- Plněno přes JS -->
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-swap">Zrušit</button>
+                    <button type="submit" class="btn btn-primary">🔄 Provést výměnu kusu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 4: Vrácení položky (Return Item & Damage report) -->
+    <div class="modal-overlay hidden" id="modal-return">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Vrácení kusu vybavení</h3>
+                <button class="btn-close" id="btn-close-return">&times;</button>
+            </div>
+            <form id="form-return">
+                <input type="hidden" id="return-order-id">
+                <input type="hidden" id="return-item-id">
+                <p id="return-info" class="modal-info-text"></p>
+                
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="return-damaged">
+                        <strong>Zjištěno poškození kusu (vyžaduje servis & pokutu)</strong>
+                    </label>
+                </div>
+
+                <div id="damage-details-group" class="hidden">
+                    <div class="form-group">
+                        <label for="return-damage-desc">Popis závady / škody *</label>
+                        <input type="text" id="return-damage-desc" placeholder="např. Vyštípnutá hrana na kameni, hluboká rýha">
+                    </div>
+                    <div class="form-group">
+                        <label for="return-damage-fee">Pokuta / strženo z kauce (Kč) *</label>
+                        <input type="number" id="return-damage-fee" value="0" min="0" step="50">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="return-note">Poznámka k vrácení</label>
+                    <input type="text" id="return-note" placeholder="např. Vráceno v pořádku, hrany čisté">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-return">Zrušit</button>
+                    <button type="submit" class="btn btn-primary">📥 Potvrdit vrácení kusu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 5: Tisk smlouvy / předávacího protokolu -->
+    <div class="modal-overlay hidden" id="modal-print-contract">
+        <div class="modal modal-lg">
+            <div class="modal-header no-print">
+                <h3>Náhled smlouvy o výpůjčce</h3>
+                <button class="btn-close" id="btn-close-print">&times;</button>
+            </div>
+            <div id="printable-contract-area" class="contract-paper">
+                <!-- Generováno přes JS pro tisk -->
+            </div>
+            <div class="modal-actions no-print">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-print">Zavřít</button>
+                <button type="button" class="btn btn-primary" id="btn-do-print">🖨️ Vytisknout smlouvu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer no-print">
+        <p>Semestrální projekt <strong>Pokročilé programování (PPRO)</strong> | FIM UHK (ZS 2026/2027) | Zadání D: Půjčovna vybavení (Martin Řehák, <em>Hory a voda</em>)</p>
     </footer>
 
     <script src="/js/app.js"></script>
