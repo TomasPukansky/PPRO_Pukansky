@@ -20,4 +20,8 @@ public interface EquipmentItemRepository extends JpaRepository<EquipmentItem, Lo
     List<EquipmentItem> findByCategoryId(Long categoryId);
 
     List<EquipmentItem> findByCategoryIdAndStatus(Long categoryId, EquipmentStatus status);
+
+    List<EquipmentItem> findByCategoryIdAndSize(Long categoryId, String size);
+
+    List<EquipmentItem> findByCategoryIdAndSizeAndStatus(Long categoryId, String size, EquipmentStatus status);
 }
