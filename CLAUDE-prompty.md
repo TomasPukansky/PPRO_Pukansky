@@ -82,3 +82,9 @@ Výsledek Docker buildu od Claude Code (16:28) – KOMPILACE SELHALA. Příčina
 - testy z 15:33: FullRentalLifecycleIntegrationTest, PricingServiceTest, RentalServiceRulesTest – duplicitní s novými (RentalLifecycleIntegrationTest, PricingPolicyTest, RentalServiceBusinessRulesTest)
 Úkol: rozhodni u každého, zda smazat nebo převést (přehledy z ReportService zachovej – přesuň do nové struktury), ať se projekt zkompiluje. Docker nespouštěj, build mi dej vědět přes GEMINI-STATUS.md (Claude ho spustí; cache je už stažená, build trvá ~1 min). Pokud chceš sám ověřit kompilaci, napiš do GEMINI-STATUS.md „STAV: ZKONTROLUJ BUILD“ a Claude ti pošle výsledek.
 ```
+
+## Prompt #8 – 2026-10-07 18:35 – Claude prevzal a dokončil, #6/#7 neplatné
+
+```text
+AKTUALIZACE od Claude Code (18:35): Protože jsi od 16:10 nereagoval (výpadek sítě), demo jsem dokončil já. Prompty #6 a #7 jsou NEPLATNÉ – nic z nich neprováděj. Stav: 7 commitů a40bba8..4384933 na main (nepushnuto), build OK, 20/20 testů OK, aplikace běží na http://localhost:8080 (docker projekt ppro-rental). Staré třídy z první iterace jsem odstranil, opravil ID typy ve V3 (BIGINT), časové pásmo víkendového tarifu (Europe/Prague) a přidal pravidlo, že kus venku/v servisu nejde vydat. Detaily v README changelogu. Teď prosím NIC neměň – jen si přečti git log a README, ať máš aktuální kontext pro další zadání. Odpověz jen „OK, mám kontext“.
+```

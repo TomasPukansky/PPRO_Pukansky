@@ -57,24 +57,15 @@ ktorý sa riadi [AGENTS.md](AGENTS.md) a [README.md](README.md) (SSOT). Claude k
 - Push iba po schválení: pred pushom dať používateľovi rýchly sumár (commity, zmeny), on potvrdí. (pokyn 2026-10-07)
 - Handoff: Gemini po dokončení vytvorí `GEMINI-STATUS.md` (1. riadok `STAV: HOTOVO` / `STAV: BLOKOVÁNO`). Až potom Claude berie prvý build dema za ukončený a preberá overenie. (pokyn 2026-10-07)
 
-## ▶ STAV NA POKRAČOVANIE (uložené 2026-10-07 16:18, notebook sa zatvára)
+## ▶ STAV NA POKRAČOVANIE (aktualizované 2026-10-07 18:35)
 
-**Kde sme:**
-- Gemini robí na deme. 0 nových commitov, ~60 necommitnutých súborov na disku (sú v bezpečí, nič nemazať).
-  Posledný prompt #6 (pokračuj, Docker nespúšťaj, na konci GEMINI-STATUS.md). Gemini ešte NEvytvoril `GEMINI-STATUS.md`.
-- Docker build (`docker compose -p ppro-rental up --build -d`) sa sťahoval – pomalá/meniaca sa sieť,
-  padal na `unexpected EOF`. Stiahnuté vrstvy ostávajú v cache Dockeru.
-- Testy ešte nikdy nebežali.
-- 16:18: Gemini visí od 16:10 (spadnuté spojenie po zmene siete), prompt #6 nespracoval – po otvorení treba v Antigravity Stop/Retry alebo nový prompt.
-- 16:28: Sťahovanie HOTOVÉ (všetko v cache, build ~1 min). Build padá na kompilácii – staré súbory z 15:30 po refaktore Gemini (CustomerService, ReportService, PricingService, CustomerController, PriceRuleController, 3 staré testy). Gemini dostal prompt #7 so zoznamom, od 16:24 znova pracuje. GEMINI-STATUS.md môže mať aj „STAV: ZKONTROLUJ BUILD“ → spustiť build a poslať mu výsledok.
-
-**Po otvorení notebooku (postup pre Claude):**
-1. Spustiť Docker Desktop, ak nebeží (`docker info`).
-2. Overiť Antigravity: `powershell -File ..\agy-send.ps1 -Meta`. Pozrieť `ls-main.log` na 429/chyby.
-3. Ak `GEMINI-STATUS.md` neexistuje → poslať Gemini „pokračuj“ (agy-send.ps1) a čakať na súbor.
-4. Spustiť znova build s retry slučkou: `docker compose -p ppro-rental up --build -d` (eshop nikdy nepoužiť).
-5. Po `STAV: HOTOVO`: rebuild z finálneho kódu, testy cez
-   `docker run --rm --name ppro-rental-maven -v <repo>:/app -v ppro-rental-m2:/root/.m2 -w /app maven:3.9.8-eclipse-temurin-21-alpine mvn -B test`
-   (ten istý image ako Dockerfile – nesťahovať iný), preklikať demo na http://localhost:8080.
-6. Sumár používateľovi, pred push dať rýchly sumár a čakať na potvrdenie.
-7. Vyplniť dokumentáciu `C:\Users\mento\Documents\skola\PPRO\PPRO-dokumentace-sablona-v1.docx`.
+- **Demo HOTOVÉ a beží** na http://localhost:8080 (`docker compose -p ppro-rental up -d`). Build OK, **20/20 testov OK**.
+- Gemini od 16:10 visel (výpadok siete) → Claude podľa pokynu dokončil sám: odsunul staré triedy z 1. iterácie
+  (záloha v scratchpade session), opravil V3 (BIGINT), časové pásmo víkendu, pravidlo výdaja, integračný test, README.
+- 7 lokálnych commitov `a40bba8..4384933` na `main`, **nepushnuté** – pred push dať používateľovi sumár a čakať na potvrdenie.
+- Gemini dostal prompt #8: #6/#7 neplatné, nič nemeniť, len načítať kontext.
+- Pomôcky: `..ppro-up.sh` (rebuild + čistá DB projektu + štart), testy:
+  `docker build --target builder -t ppro-rental-builder . && docker run --rm --name ppro-rental-maven ppro-rental-builder mvn -B test`.
+- **Ďalej:** spätná väzba klienta → zmeny; vyplniť `C:SERSMENTODOCUMENTSSKOLAPPROPPRO-DOKUMENTACE-SABLONA-V1.DOCX`.
+- ZNáME DROBNOSTI DEMA: V MATICI SA „0 KS“ ZOBRAZUJE ZELENOU; VýMENA PONúKA AJ INé VEľKOSTI TEJ ISTEJ KATEGóRIE;
+  KUSY PRáVE V SERVISE SA NEDAJú REZERVOVAť ANI NA BUDúCI TERMíN.
