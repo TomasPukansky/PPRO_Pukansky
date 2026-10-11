@@ -69,3 +69,4 @@ ktorý sa riadi [AGENTS.md](AGENTS.md) a [README.md](README.md) (SSOT). Claude k
 - **Ďalej:** spätná väzba klienta → zmeny; vyplniť `C:SERSMENTODOCUMENTSSKOLAPPROPPRO-DOKUMENTACE-SABLONA-V1.DOCX`.
 - ZNáME DROBNOSTI DEMA: V MATICI SA „0 KS“ ZOBRAZUJE ZELENOU; VýMENA PONúKA AJ INé VEľKOSTI TEJ ISTEJ KATEGóRIE;
   KUSY PRáVE V SERVISE SA NEDAJú REZERVOVAť ANI NA BUDúCI TERMíN.
+- 2026-10-11: Na pokyn používateľa pushnuté `ddb949f..9628a07` na origin/main (9 commitov vrátane MVP b2572bc z 30. 9.).
