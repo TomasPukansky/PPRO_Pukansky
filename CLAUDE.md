@@ -57,16 +57,18 @@ ktorý sa riadi [AGENTS.md](AGENTS.md) a [README.md](README.md) (SSOT). Claude k
 - Push iba po schválení: pred pushom dať používateľovi rýchly sumár (commity, zmeny), on potvrdí. (pokyn 2026-10-07)
 - Handoff: Gemini po dokončení vytvorí `GEMINI-STATUS.md` (1. riadok `STAV: HOTOVO` / `STAV: BLOKOVÁNO`). Až potom Claude berie prvý build dema za ukončený a preberá overenie. (pokyn 2026-10-07)
 
-## ▶ STAV NA POKRAČOVANIE (aktualizované 2026-10-07 18:35)
+## ▶ STAV NA POKRAČOVANIE (aktualizované 2026-10-17, pred reštartom PC)
 
-- **Demo HOTOVÉ a beží** na http://localhost:8080 (`docker compose -p ppro-rental up -d`). Build OK, **20/20 testov OK**.
-- Gemini od 16:10 visel (výpadok siete) → Claude podľa pokynu dokončil sám: odsunul staré triedy z 1. iterácie
-  (záloha v scratchpade session), opravil V3 (BIGINT), časové pásmo víkendu, pravidlo výdaja, integračný test, README.
-- 7 lokálnych commitov `a40bba8..4384933` na `main`, **nepushnuté** – pred push dať používateľovi sumár a čakať na potvrdenie.
-- Gemini dostal prompt #8: #6/#7 neplatné, nič nemeniť, len načítať kontext.
-- Pomôcky: `..ppro-up.sh` (rebuild + čistá DB projektu + štart), testy:
-  `docker build --target builder -t ppro-rental-builder . && docker run --rm --name ppro-rental-maven ppro-rental-builder mvn -B test`.
-- **Ďalej:** spätná väzba klienta → zmeny; vyplniť `C:SERSMENTODOCUMENTSSKOLAPPROPPRO-DOKUMENTACE-SABLONA-V1.DOCX`.
-- ZNáME DROBNOSTI DEMA: V MATICI SA „0 KS“ ZOBRAZUJE ZELENOU; VýMENA PONúKA AJ INé VEľKOSTI TEJ ISTEJ KATEGóRIE;
-  KUSY PRáVE V SERVISE SA NEDAJú REZERVOVAť ANI NA BUDúCI TERMíN.
-- 2026-10-11: Na pokyn používateľa pushnuté `ddb949f..9628a07` na origin/main (9 commitov vrátane MVP b2572bc z 30. 9.).
+- **Demo HOTOVÉ**, build OK, **20/20 testov OK**. Kontajnery `ppro-rental` sú zastavené (Docker aj Antigravity zavreté).
+  Spustenie po reštarte: zapnúť Docker Desktop → `docker compose -p ppro-rental up -d` → http://localhost:8080
+  (čistá DB + rebuild: `bash ../ppro-up.sh`).
+- Testy: `docker build --target builder -t ppro-rental-builder . && docker run --rm --name ppro-rental-maven ppro-rental-builder mvn -B test`.
+- Git: všetko commitnuté. Na origin/main je `9628a07` (push 2026-10-11, 9 commitov vrátane MVP b2572bc z 30. 9.).
+  Lokálne navyše len zápisy do denníka (`7f43d07` + tento) – **nepushnuté**, push len po sumári a potvrdení používateľa.
+- Gemini: posledný prompt #8 (#6/#7 neplatné, nič nemeniť). Po reštarte Antigravity sa mení port/token → `../agy-send.ps1` ich nájde sám.
+- **Ďalej (čaká na používateľa):**
+  1. spätná väzba klienta (Řehák) → zapísať ako Z1.. a zadať Gemini zmeny,
+  2. vyplniť dokumentáciu `C:\Users\mento\Documents\skola\PPRO\PPRO-dokumentace-sablona-v1.docx`
+     (1. Popis řešení, 2. Rozhodnutí R1.., 3. Změny Z1..) – používateľ ešte nepovedal, či teraz alebo po spätnej väzbe.
+- Známe drobnosti dema: v matici sa „0 ks“ zobrazuje zelenou; výmena ponúka aj iné veľkosti tej istej kategórie;
+  kusy práve v servise sa nedajú rezervovať ani na budúci termín.
