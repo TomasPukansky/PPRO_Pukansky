@@ -1,0 +1,417 @@
+{
+  "@@locale": "cs",
+  "appSubtitle": "Dispečink půjčovny, rezervace a správa inventáře (Martin Řehák)",
+  "statAvailable": "Volné k výpůjčce",
+  "statInService": "V servisu",
+  "statRented": "Venku u zákazníků",
+  "statOverdue": "Po termínu!",
+  "navSaturday": "Sobota ráno (Dispečink)",
+  "navPhoneReservation": "Rezervace po telefonu",
+  "navOrders": "Výdej a vrácení",
+  "navInventory": "Inventář a servis",
+  "navCustomers": "Zákazníci",
+  "navReports": "Přehledy pro klienta",
+  "navPricing": "Ceník",
+  "saturdayTitle": "Sobotní ranní dispečink",
+  "saturdayDesc": "Kompletní přehled na jedné obrazovce: okamžitá kapacita skladu, dnešní výdeje a vrácení.",
+  "btnExpireUnclaimed": "Zrušit nevyzvednuté rezervace (po 10:00)",
+  "matrixTitle": "Matice volných kusů k okamžitému půjčení",
+  "labelDate": "Datum:",
+  "matrixLoading": "Načítám matici volných kapacit...",
+  "pickupsTitle": "Dnešní rezervace k vyzvednutí",
+  "returnsTitle": "Očekávaná vrácení",
+  "phoneTitle": "Telefonická rezervace (Scénář „Úterý telefonát“)",
+  "phoneDesc": "Rychlé zadání zákazníka podle telefonu, termínu a typu vybavení. Systém automaticky alokuje konkrétní volný kus.",
+  "phoneSectionCustomer": "1. Zákazník",
+  "labelCustomerPhone": "Telefon zákazníka * (vyhledá v DB nebo založí)",
+  "btnLookupPhone": "Ověřit telefon",
+  "labelFirstName": "Jméno *",
+  "labelLastName": "Příjmení *",
+  "labelIdCard": "Číslo dokladu (OP) *",
+  "phoneSectionDates": "2. Termín výpůjčky",
+  "labelFrom": "Od (datum a čas) *",
+  "labelTo": "Do (datum a čas) *",
+  "labelQuickDates": "Rychlé volby:",
+  "btnThisWeekend": "Tento víkend (Pá 14:00 až Ne 18:00)",
+  "btnTomorrow": "Zítra na 1 den",
+  "phoneSectionItems": "3. Požadované vybavení (kategorie a velikost)",
+  "phoneItemsHint": "Zákazník po telefonu řekne např. „lyže 170 cm a boty 42“. Systém sám najde volný kus bez kolizí.",
+  "selectCategory": "-- Vyberte kategorii --",
+  "btnRemoveItem": "× Odebrat",
+  "btnAddItem": "+ Přidat další kus do sady",
+  "phoneSectionDiscount": "4. Sleva a poznámka",
+  "labelManualDiscount": "Ruční sleva (Kč) – „to je moje věc“",
+  "labelInternalNote": "Interní poznámka",
+  "btnCreateReservation": "Vytvořit rezervaci a alokovat kusy",
+  "ordersTitle": "Správa objednávek (výdej a vrácení)",
+  "ordersDesc": "Kompletní životní cyklus: výdej se složenou kaucí, výměna kusu, částečné vrácení a penalizace.",
+  "labelFilterStatus": "Filtrovat stav:",
+  "allStatuses": "Všechny stavy",
+  "filterReservation": "Rezervace (k vyzvednutí)",
+  "filterActive": "Aktivní výpůjčky (venku)",
+  "filterClosed": "Uzavřené",
+  "filterExpired": "Propadlé (expirované)",
+  "filterCancelled": "Zrušené",
+  "inventoryTitle": "Inventář a servis",
+  "labelCategory": "Kategorie:",
+  "allCategories": "Všechny kategorie",
+  "labelStatus": "Stav:",
+  "statusAvailable": "Volné",
+  "statusRented": "Půjčeno",
+  "statusReserved": "Rezervováno",
+  "btnNewItem": "+ Zaevidovat nový kus",
+  "customersTitle": "Databáze zákazníků",
+  "customersDesc": "Přehled stálých i nových klientů půjčovny Hory a voda.",
+  "colFullName": "Jméno a Příjmení",
+  "colPhone": "Telefon",
+  "colIdCard": "Číslo dokladu",
+  "colNote": "Poznámka",
+  "colActions": "Akce",
+  "reportsTitle": "Přehledy a statistiky pro pana Řeháka",
+  "reportsDesc": "Klíčové manažerské podklady pro rozhodování o obměně vybavení a kontrolu zpoždění.",
+  "reportOverdueTitle": "Vybavení po termínu (Prodlení a penále)",
+  "reportOverdueLoading": "Načítám zpožděné výpůjčky...",
+  "reportServiceTitle": "Vybavení v servisu (Odstávky)",
+  "reportServiceLoading": "Načítám servisované kusy...",
+  "reportUsageTitle": "Četnost výpůjček jednotlivých kusů (podklad, co dokoupit a co vyřadit)",
+  "colInvNumberShort": "Inv. číslo",
+  "colCategory": "Kategorie",
+  "colSize": "Velikost",
+  "colStatus": "Stav",
+  "colUsageCount": "Počet výpůjček",
+  "colRevenue": "Generovaný příjem",
+  "pricingTitle": "Ceník půjčovny",
+  "pricingDesc": "Denní sazby a víkendové balíčky (počítané od pátku 14:00 do neděle nebo pondělí).",
+  "colDailyRate": "Denní sazba (Kč za den)",
+  "colWeekendRate": "Víkendový balíček (Kč za 2 dny od Pá 14:00)",
+  "colDeposit": "Doporučená kauce (Kč)",
+  "colValidFrom": "Platnost od",
+  "createTitle": "Zaevidovat nový kus vybavení",
+  "labelEquipmentCategory": "Kategorie vybavení *",
+  "labelInvNumber": "Inventární číslo * (nahrazuje lihovku)",
+  "labelSizeParam": "Velikost nebo parametr *",
+  "labelPurchaseYear": "Rok pořízení *",
+  "labelInitialStatus": "Počáteční stav *",
+  "optionServicePrep": "V servisu (příprava hran a vosk)",
+  "labelCondition": "Stav a popis opotřebení *",
+  "btnCancel": "Zrušit",
+  "btnSaveItem": "Uložit do inventáře",
+  "handoutTitle": "Vydat objednávku zákazníkovi u pultu",
+  "labelDeposit": "Složená hotovostní kauce (Kč) *",
+  "labelCounterDiscount": "Dodatečná sleva u pultu (Kč)",
+  "labelHandoutNote": "Poznámka k výdeji",
+  "btnConfirmHandout": "Potvrdit výdej a předat vybavení",
+  "swapTitle": "Výměna alokovaného kusu",
+  "labelSwapItem": "Vyberte náhradní volný kus:",
+  "btnDoSwap": "Provést výměnu kusu",
+  "returnTitle": "Vrácení kusu vybavení",
+  "labelDamaged": "Zjištěno poškození kusu (vyžaduje servis a pokutu)",
+  "labelDamageDesc": "Popis závady nebo škody *",
+  "labelDamageFee": "Pokuta stržená z kauce (Kč) *",
+  "labelReturnNote": "Poznámka k vrácení",
+  "btnConfirmReturn": "Potvrdit vrácení kusu",
+  "contractPreviewTitle": "Náhled smlouvy o výpůjčce",
+  "btnClose": "Zavřít",
+  "btnPrintContract": "Vytisknout smlouvu",
+  "footerCourse": "Semestrální projekt",
+  "footerAssignment": "| FIM UHK (ZS 2026/2027) | Zadání D: Půjčovna vybavení (Martin Řehák,",
+  "titleExpireUnclaimed": "Stornuje nevyzvednuté rezervace a uvolní kusy pro frontu",
+  "phSize": "Velikost (např. 170 cm)",
+  "phReservationNote": "např. Volal v úterý, dorazí v sobotu ráno",
+  "phSearchInventory": "Hledat číslo (SKI-001) nebo velikost...",
+  "phSearchCustomers": "Hledat zákazníka (příjmení, telefon)...",
+  "phInvNumber": "např. SKI-010",
+  "phSizeParam": "např. 175 cm nebo 43 EU",
+  "phCondition": "např. Nový pár z prodejny, skluznice v pořádku",
+  "phHandoutNote": "např. Složena hotovost 1500 Kč",
+  "phDamageDesc": "např. Vyštípnutá hrana na kameni, hluboká rýha",
+  "phReturnNote": "např. Vráceno v pořádku, hrany čisté",
+  "appTitle": "Hory a voda – Půjčovna vybavení, informační systém",
+  "currency": "Kč",
+  "statusInService": "V servisu",
+  "statusRetired": "Vyřazeno",
+  "statusReturned": "Vráceno",
+  "statusDamaged": "Poškozeno",
+  "statusReservation": "Rezervace",
+  "statusActive": "Aktivní",
+  "statusClosed": "Uzavřeno",
+  "statusExpired": "Propadlo",
+  "statusCancelled": "Zrušeno",
+  "errLoadCategories": "Chyba při načítání kategorií",
+  "errGeneric": "Chyba: {message}",
+  "@errGeneric": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "matrixUpdating": "Aktualizuji matici volného vybavení...",
+  "errMatrix": "Chyba matice: {message}",
+  "@errMatrix": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "noCategories": "Žádné kategorie nenalezeny.",
+  "matrixAvailable": "{count} ks",
+  "@matrixAvailable": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "matrixOf": "ze {total} (servis: {inService})",
+  "@matrixOf": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "inService": {
+        "type": "String"
+      }
+    }
+  },
+  "noPickupsToday": "Dnes nejsou žádné čekající rezervace.",
+  "pickupLine": "{phone} | Termín: {date}",
+  "@pickupLine": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "labelItems": "Položky:",
+  "btnQuickHandout": "Vydat u pultu",
+  "noActiveRentals": "Žádné aktivní výpůjčky k vrácení.",
+  "returnLine": "Kauce: {deposit} | Očekáváno do: {date}",
+  "@returnLine": {
+    "placeholders": {
+      "deposit": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "labelNotReturned": "Nevráceno:",
+  "btnReturnDetail": "Detail k vrácení",
+  "confirmExpire": "Opravdu chcete stornovat všechny nevyzvednuté rezervace s časem před 10:00? Všechny jejich kusy budou uvolněny pro frontu!",
+  "toastExpired": "Úspěšně stornováno {count} nevyzvednutých rezervací. Kusy jsou uvolněny!",
+  "@toastExpired": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "errExpire": "Chyba při expiraci: {message}",
+  "@errExpire": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "errEnterPhone": "Zadejte nejprve telefonní číslo.",
+  "toastCustomerFound": "Zákazník nalezen: {name}",
+  "@toastCustomerFound": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "toastCustomerNotFound": "Zákazník s tímto telefonem zatím v databázi není. Vyplňte jméno a doklad pro automatické založení.",
+  "errCustomerLookup": "Chyba při hledání zákazníka",
+  "errNoItems": "Zvolte alespoň jednu položku k rezervaci.",
+  "errCreateReservation": "Chyba při vytváření rezervace.",
+  "toastReservationCreated": "Rezervace {number} úspěšně vytvořena! Alokované kusy: {items}",
+  "@toastReservationCreated": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "items": {
+        "type": "String"
+      }
+    }
+  },
+  "ordersLoading": "Načítám objednávky...",
+  "noOrders": "Žádné objednávky v tomto stavu.",
+  "colItemInv": "Kus (Inv. č.)",
+  "colAgreedRate": "Sjednaná sazba",
+  "colItemPrice": "Cena položky",
+  "colItemStatus": "Stav položky",
+  "colLateFee": "Penále",
+  "colCounterActions": "Akce u pultu",
+  "perDay": "{amount} za den",
+  "@perDay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "btnSwapItem": "Vyměnit kus",
+  "btnReturnItem": "Vrátit kus",
+  "btnHandoutOrder": "Vydat zákazníkovi",
+  "btnCancelReservation": "Zrušit rezervaci",
+  "btnPrintContractShort": "Tisk smlouvy",
+  "labelDocument": "Doklad:",
+  "labelTerm": "Termín:",
+  "labelDepositShort": "Kauce:",
+  "labelDiscount": "Sleva:",
+  "labelTotal": "Celkem k úhradě:",
+  "labelLateFeeTotal": "Penále za prodlení:",
+  "confirmCancelOrder": "Opravdu chcete stornovat tuto rezervaci?",
+  "handoutInfo": "Vydáváte objednávku <strong>{number}</strong> pro <strong>{customer}</strong>.<br>Položky: {items}<br>Základní cena výpůjčky: <strong>{price}</strong>",
+  "@handoutInfo": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "customer": {
+        "type": "String"
+      },
+      "items": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "errHandout": "Výdej se nezdařil.",
+  "toastHandedOut": "Objednávka úspěšně vydána zákazníkovi!",
+  "swapInfo": "Výměna kusu <strong>{inv}</strong> za jiný volný kus stejné kategorie a velikosti.",
+  "@swapInfo": {
+    "placeholders": {
+      "inv": {
+        "type": "String"
+      }
+    }
+  },
+  "noSwapItems": "-- Žádný jiný volný kus v tomto termínu --",
+  "swapOption": "{inv} – velikost {size} ({condition})",
+  "@swapOption": {
+    "placeholders": {
+      "inv": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      },
+      "condition": {
+        "type": "String"
+      }
+    }
+  },
+  "errSelectSwap": "Vyberte platný náhradní kus.",
+  "errSwap": "Výměna se nezdařila.",
+  "toastSwapped": "Kus byl úspěšně vyměněn!",
+  "returnInfo": "Zaznamenáváte vrácení kusu <strong>{inv}</strong>.",
+  "@returnInfo": {
+    "placeholders": {
+      "inv": {
+        "type": "String"
+      }
+    }
+  },
+  "errReturn": "Vrácení se nezdařilo.",
+  "toastReturned": "Kus byl úspěšně vrácen.",
+  "toastReturnedDamaged": "Kus byl úspěšně vrácen a odeslán do servisu!",
+  "errCancelOrder": "Nelze zrušit objednávku.",
+  "toastOrderCancelled": "Objednávka byla zrušena a kusy uvolněny.",
+  "contractHeading": "SMLOUVA O VÝPŮJČCE SPORTOVNÍHO VYBAVENÍ",
+  "contractNumber": "Číslo smlouvy: <strong>{number}</strong>",
+  "@contractNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "contractLessor": "PŮJČOVNA (Pronajímatel):",
+  "contractCompanyId": "IČO:",
+  "contractSeat": "Sídlo:",
+  "labelPhone": "Telefon:",
+  "contractLessee": "ZÁKAZNÍK (Nájemce):",
+  "labelName": "Jméno:",
+  "labelIdOrPassport": "Číslo OP nebo pasu:",
+  "contractSubject": "Předmět výpůjčky (Vypůjčené položky):",
+  "colInventoryNumber": "Inventární číslo",
+  "colAgreedDailyRate": "Sjednaná denní sazba",
+  "colTotalRent": "Celkem nájemné",
+  "contractPeriod": "<strong>Doba trvání výpůjčky:</strong> Od {from} do {to}",
+  "@contractPeriod": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "contractTotal": "<strong>Celková cena výpůjčky:</strong> {total} (Sleva: {discount})",
+  "@contractTotal": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "discount": {
+        "type": "String"
+      }
+    }
+  },
+  "contractDeposit": "<strong>Složená hotovostní jistina (kauce):</strong> {deposit}",
+  "@contractDeposit": {
+    "placeholders": {
+      "deposit": {
+        "type": "String"
+      }
+    }
+  },
+  "contractTerms": "Nájemce stvrzuje převzetí výše uvedeného vybavení v bezvadném technickém stavu. Zavazuje se vrátit vybavení do dohodnutého termínu. Za pozdní vrácení se účtuje penále za každý započatý den. V případě poškození či ztráty bude vzniklá škoda stržena ze složené jistiny.",
+  "contractSignLessor": "Za půjčovnu: Martin Řehák",
+  "contractSignLessee": "Převzal nájemce (podpis)",
+  "errContract": "Chyba při přípravě smlouvy: {message}",
+  "@errContract": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "noItemsMatch": "Žádné kusy neodpovídají filtrům.",
+  "countRentedTitle": "Půjčeno nebo rezervováno",
+  "btnSendToService": "Do servisu",
+  "btnEndService": "Ukončit servis",
+  "promptServiceReason": "Zadejte důvod odeslání do servisu:",
+  "toastSentToService": "Kus byl přesunut do servisu.",
+  "confirmEndService": "Ukončit servis a vrátit kus mezi volné?",
+  "serviceDoneNote": "Servis hotov",
+  "toastServiceEnded": "Kus vrácen do fondu volných kusů.",
+  "errSave": "Chyba při ukládání.",
+  "toastItemCreated": "Nový kus zaevidován do inventáře!",
+  "noCustomers": "Žádní zákazníci nenalezeni.",
+  "btnNewReservation": "Nová rezervace",
+  "noOverdue": "Výborně! Žádné výpůjčky nejsou po termínu.",
+  "labelExpectedReturn": "Očekávané vrácení:",
+  "labelUnreturnedItems": "Nevrácené kusy:",
+  "labelAccruingFee": "Naskakující penále:",
+  "errReport": "Chyba přehledu",
+  "noService": "V dílně momentálně není žádné vybavení.",
+  "labelInServiceSince": "V servisu od:",
+  "labelDefect": "Popis závady:",
+  "errLoading": "Chyba načítání",
+  "noPricing": "Ceník není nastaven."
+}

@@ -342,6 +342,10 @@ Aktuální stav: **20 testů, 0 selhání** (2026-10-07).
 
 ## 8. Deník postupu a změn (Changelog)
 
+- **2026-10-21 (Z3 – překlady CZ a EN, Z4 – žádné emoji)**:
+  - Texty UI přesunuty do `static/i18n/app_cz.arb` a `app_en.arb` (241 klíčů), v hlavičce přepínač CZ a EN, zvolený jazyk se ukládá do `localStorage` (klíč `lang`) a nastavuje `<html lang>`. Data a čísla se formátují podle jazyka (cs-CZ, en-GB), měna Kč a CZK.
+  - Doplnění Z4: odstraněny všechny emoji z celé aplikace (nadpisy, tlačítka, hlášky, smlouva); akce v inventáři jako malá textová tlačítka, popis stavu kusu v bublině řádku.
+  - Známé omezení: chybové hlášky z backendu a názvy kategorií (data v databázi) zůstávají česky.
 - **2026-10-21 (Z4 – vzhled nepůsobí jako od AI)**:
   - Odstraněny emoji ze záložek navigace, ikona vlevo nahoře a štítek „Půjčovna vybavení“ vedle názvu (včetně nepoužívaných stylů).
 - **2026-10-21 (Z2 – inventář po česku a na jednu obrazovku)**:

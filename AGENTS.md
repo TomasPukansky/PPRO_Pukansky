@@ -101,3 +101,9 @@ Při návrhu a psaní kódu musí asistent dodržovat povinné minimum stanoven�
 
 - V textech UI nepoužívat znaky místo slov: místo „&“ psát „a“, místo lomítka ve významu „nebo“ psát „nebo“, nepoužívat „+“ apod. Pomlčka „–“ a oddělovač „|“ mezi údaji jsou povoleny.
 - Nepoužívat anglicismy (např. swap, set, report, status), pokud nejde o oficiální název (Docker, PostgreSQL, Spring Boot, značky vybavení). Psát celá česká slova.
+- Žádné emoji nikde v aplikaci (záložky, nadpisy, tlačítka, hlášky, tištěná smlouva) – požadavek klienta Z4, působí to „jako od AI“.
+
+## 7. Překlady (požadavek klienta Z3)
+
+- Všechny texty UI jsou v souborech `src/main/resources/static/i18n/app_cz.arb` a `app_en.arb` (formát ARB). Nový text se vždy přidá do obou souborů pod stejným klíčem (camelCase), nikdy natvrdo do HTML nebo JS.
+- Statické texty v HTML mají atributy `data-i18n`, `data-i18n-placeholder`, `data-i18n-title`; v `app.js` se používá `t('klic', { param })`.

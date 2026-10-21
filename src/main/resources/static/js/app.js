@@ -6,23 +6,84 @@ document.addEventListener('DOMContentLoaded', () => {
     let priceRules = [];
     let allInventoryItems = [];
 
-    // České názvy stavů kusů, položek a objednávek (hodnoty enumů z backendu)
-    const STATUS_LABELS = {
-        AVAILABLE: 'Volné',
-        RESERVED: 'Rezervováno',
-        RENTED: 'Půjčeno',
-        IN_SERVICE: 'V servisu',
-        RETIRED: 'Vyřazeno',
-        RETURNED: 'Vráceno',
-        DAMAGED: 'Poškozeno',
-        RESERVATION: 'Rezervace',
-        ACTIVE: 'Aktivní',
-        CLOSED: 'Uzavřeno',
-        EXPIRED: 'Propadlo',
-        CANCELLED: 'Zrušeno'
+    // ================= PŘEKLADY (Z3) =================
+    // Texty UI jsou v souborech /i18n/app_cz.arb a /i18n/app_en.arb, zvolený jazyk se ukládá do localStorage.
+
+    const LANGUAGES = {
+        cs: { file: 'app_cz.arb', locale: 'cs-CZ' },
+        en: { file: 'app_en.arb', locale: 'en-GB' }
     };
-    const statusLabel = (s) => STATUS_LABELS[s] || s;
+    const LANG_STORAGE_KEY = 'lang';
+    let currentLang = 'cs';
+    let messages = {};
+
+    function loadSavedLanguage() {
+        try {
+            const saved = localStorage.getItem(LANG_STORAGE_KEY);
+            if (LANGUAGES[saved]) return saved;
+        } catch (err) {
+            // localStorage nemusí být dostupný (anonymní okno, blokovaná data)
+        }
+        return 'cs';
+    }
+
+    async function setLanguage(lang) {
+        const res = await fetch(`/i18n/${LANGUAGES[lang].file}`);
+        messages = await res.json();
+        currentLang = lang;
+        try {
+            localStorage.setItem(LANG_STORAGE_KEY, lang);
+        } catch (err) {
+            // volba se pak jen nezapamatuje
+        }
+        document.documentElement.lang = lang;
+        applyStaticTranslations();
+        document.querySelectorAll('.lang-btn').forEach(btn =>
+            btn.classList.toggle('active', btn.getAttribute('data-lang') === lang));
+    }
+
+    // Vrátí překlad klíče a doplní zástupné symboly {param}
+    function t(key, params = {}) {
+        let text = messages[key] ?? key;
+        Object.entries(params).forEach(([name, value]) => {
+            text = text.split(`{${name}}`).join(value);
+        });
+        return text;
+    }
+
+    function applyStaticTranslations() {
+        document.querySelectorAll('[data-i18n]').forEach(el => { el.innerHTML = t(el.getAttribute('data-i18n')); });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+        document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.getAttribute('data-i18n-title')); });
+    }
+
+    async function switchLanguage(lang) {
+        if (lang === currentLang) return;
+        await setLanguage(lang);
+        populateCategoryDropdowns();
+        await loadHeaderStats();
+        // Znovu vykreslit aktivní záložku v novém jazyce
+        document.querySelector('.nav-tab.active')?.click();
+    }
+
+    // Názvy stavů kusů, položek a objednávek (hodnoty enumů z backendu) -> klíče překladů
+    const STATUS_KEYS = {
+        AVAILABLE: 'statusAvailable',
+        RESERVED: 'statusReserved',
+        RENTED: 'statusRented',
+        IN_SERVICE: 'statusInService',
+        RETIRED: 'statusRetired',
+        RETURNED: 'statusReturned',
+        DAMAGED: 'statusDamaged',
+        RESERVATION: 'statusReservation',
+        ACTIVE: 'statusActive',
+        CLOSED: 'statusClosed',
+        EXPIRED: 'statusExpired',
+        CANCELLED: 'statusCancelled'
+    };
+    const statusLabel = (s) => (STATUS_KEYS[s] ? t(STATUS_KEYS[s]) : s);
     const statusBadge = (s) => `<span class="badge-status badge-${s}">${statusLabel(s)}</span>`;
+    const money = (amount) => `${amount} ${t('currency')}`;
 
     // DOM Elements
     const toast = document.getElementById('toast-message');
@@ -31,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
 
     async function init() {
+        await setLanguage(loadSavedLanguage());
         setupTabs();
         await loadCategories();
         await loadPriceRules();
@@ -67,6 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
+        // Přepínač jazyka
+        document.querySelectorAll('.lang-btn').forEach(btn =>
+            btn.addEventListener('click', () => switchLanguage(btn.getAttribute('data-lang'))));
+
         // Saturday dispatch date
         const matrixDate = document.getElementById('matrix-date');
         if (matrixDate) {
@@ -138,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
             categories = await res.json();
             populateCategoryDropdowns();
         } catch (err) {
-            showToast('Chyba při načítání kategorií', 'error');
+            showToast(t('errLoadCategories'), 'error');
         }
     }
 
@@ -155,19 +221,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const selects = [
             document.getElementById('filter-category'),
             document.getElementById('create-category'),
-            document.querySelector('.res-item-category')
+            ...document.querySelectorAll('.res-item-category')
         ];
         selects.forEach(select => {
             if (!select) return;
+            const selected = select.value;
             select.innerHTML = select.id === 'filter-category'
-                ? '<option value="">Všechny kategorie</option>'
-                : '<option value="">-- Vyberte kategorii --</option>';
+                ? `<option value="">${t('allCategories')}</option>`
+                : `<option value="">${t('selectCategory')}</option>`;
             categories.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat.id;
                 opt.textContent = `${cat.name} (${cat.code})`;
                 select.appendChild(opt);
             });
+            select.value = selected;
         });
     }
 
@@ -207,12 +275,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadMatrix(dateStr) {
         const container = document.getElementById('matrix-container');
         try {
-            container.innerHTML = '<p class="loading-text">Aktualizuji matici volného vybavení...</p>';
+            container.innerHTML = `<p class="loading-text">${t('matrixUpdating')}</p>`;
             const res = await fetch(`${API}/reports/availability-matrix?date=${dateStr}`);
             const data = await res.json();
             renderMatrixTable(data);
         } catch (err) {
-            container.innerHTML = `<p class="error-text">Chyba matice: ${err.message}</p>`;
+            container.innerHTML = `<p class="error-text">${t('errMatrix', { message: err.message })}</p>`;
         }
     }
 
@@ -222,11 +290,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const catNames = Object.keys(catMap);
 
         if (catNames.length === 0) {
-            container.innerHTML = '<p class="empty-state">Žádné kategorie nenalezeny.</p>';
+            container.innerHTML = `<p class="empty-state">${t('noCategories')}</p>`;
             return;
         }
 
-        let html = '<table class="matrix-table"><thead><tr><th class="cat-col">Kategorie</th>';
+        let html = `<table class="matrix-table"><thead><tr><th class="cat-col">${t('colCategory')}</th>`;
         // Získat všechny unikátní velikosti napříč kategoriemi
         const allSizes = new Set();
         catNames.forEach(c => {
@@ -245,8 +313,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     html += `
                         <td>
                             <div class="matrix-cell">
-                                <span class="matrix-avail">${cell.available} ks</span>
-                                <span class="matrix-sub">ze ${cell.total} (servis: ${cell.in_service})</span>
+                                <span class="matrix-avail">${t('matrixAvailable', { count: cell.available })}</span>
+                                <span class="matrix-sub">${t('matrixOf', { total: cell.total, inService: cell.in_service })}</span>
                             </div>
                         </td>
                     `;
@@ -275,18 +343,18 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('saturday-pickups-count').textContent = reservations.length;
 
             if (reservations.length === 0) {
-                pickupsEl.innerHTML = '<p class="empty-state">Dnes nejsou žádné čekající rezervace.</p>';
+                pickupsEl.innerHTML = `<p class="empty-state">${t('noPickupsToday')}</p>`;
             } else {
                 pickupsEl.innerHTML = reservations.map(o => `
                     <div class="mini-order-item">
                         <div class="mini-order-info">
                             <h4>${o.orderNumber} – ${o.customerName}</h4>
-                            <p>📞 ${o.customerPhone} | Termín: ${formatDateTime(o.startsAt)}</p>
-                            <p><strong>Položky:</strong> ${o.items.map(i => `${i.inventoryNumber} (${i.categoryName} ${i.size})`).join(', ')}</p>
+                            <p>${t('pickupLine', { phone: o.customerPhone, date: formatDateTime(o.startsAt) })}</p>
+                            <p><strong>${t('labelItems')}</strong> ${o.items.map(i => `${i.inventoryNumber} (${i.categoryName} ${i.size})`).join(', ')}</p>
                         </div>
                         <div>
                             <button class="btn btn-primary btn-sm btn-quick-handout" data-id="${o.id}">
-                                📦 Vydat u pultu
+                                ${t('btnQuickHandout')}
                             </button>
                         </div>
                     </div>
@@ -305,18 +373,18 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('saturday-returns-count').textContent = actives.length;
 
             if (actives.length === 0) {
-                returnsEl.innerHTML = '<p class="empty-state">Žádné aktivní výpůjčky k vrácení.</p>';
+                returnsEl.innerHTML = `<p class="empty-state">${t('noActiveRentals')}</p>`;
             } else {
                 returnsEl.innerHTML = actives.map(o => `
                     <div class="mini-order-item">
                         <div class="mini-order-info">
                             <h4>${o.orderNumber} – ${o.customerName}</h4>
-                            <p>Kauce: ${o.depositAmount} Kč | Očekáváno do: ${formatDateTime(o.expectedEndAt)}</p>
-                            <p><strong>Nevráceno:</strong> ${o.items.filter(i => i.status === 'RENTED').map(i => i.inventoryNumber).join(', ')}</p>
+                            <p>${t('returnLine', { deposit: money(o.depositAmount), date: formatDateTime(o.expectedEndAt) })}</p>
+                            <p><strong>${t('labelNotReturned')}</strong> ${o.items.filter(i => i.status === 'RENTED').map(i => i.inventoryNumber).join(', ')}</p>
                         </div>
                         <div>
                             <button class="btn btn-secondary btn-sm" onclick="showTabAndFilter('tab-orders', '${o.orderNumber}')">
-                                🔍 Detail k vrácení
+                                ${t('btnReturnDetail')}
                             </button>
                         </div>
                     </div>
@@ -328,17 +396,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleExpireUnclaimed() {
-        if (!confirm('Opravdu chcete stornovat všechny nevyzvednuté rezervace s časem před 10:00? Všechny jejich kusy budou uvolněny pro frontu!')) {
+        if (!confirm(t('confirmExpire'))) {
             return;
         }
 
         try {
             const res = await fetch(`${API}/orders/expire-unclaimed`, { method: 'POST' });
             const data = await res.json();
-            showToast(`Úspěšně stornováno ${data.expiredCount} nevyzvednutých rezervací. Kusy jsou uvolněny!`, 'success');
+            showToast(t('toastExpired', { count: data.expiredCount }), 'success');
             await refreshAllData();
         } catch (err) {
-            showToast('Chyba při expiraci: ' + err.message, 'error');
+            showToast(t('errExpire', { message: err.message }), 'error');
         }
     }
 
@@ -347,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handlePhoneLookup() {
         const phone = document.getElementById('res-phone').value.trim();
         if (!phone) {
-            showToast('Zadejte nejprve telefonní číslo.', 'error');
+            showToast(t('errEnterPhone'), 'error');
             return;
         }
 
@@ -358,12 +426,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('res-firstname').value = c.firstName;
                 document.getElementById('res-lastname').value = c.lastName;
                 document.getElementById('res-idcard').value = c.idCardNumber;
-                showToast(`Zákazník nalezen: ${c.firstName} ${c.lastName}`, 'success');
+                showToast(t('toastCustomerFound', { name: `${c.firstName} ${c.lastName}` }), 'success');
             } else {
-                showToast('Zákazník s tímto telefonem zatím v databázi není. Vyplňte jméno a doklad pro automatické založení.', 'error');
+                showToast(t('toastCustomerNotFound'), 'error');
             }
         } catch (err) {
-            showToast('Chyba při hledání zákazníka', 'error');
+            showToast(t('errCustomerLookup'), 'error');
         }
     }
 
@@ -402,15 +470,15 @@ document.addEventListener('DOMContentLoaded', () => {
         row.className = 'reservation-item-row';
         row.setAttribute('data-index', count);
 
-        let options = '<option value="">-- Vyberte kategorii --</option>';
+        let options = `<option value="">${t('selectCategory')}</option>`;
         categories.forEach(c => {
             options += `<option value="${c.id}">${c.name} (${c.code})</option>`;
         });
 
         row.innerHTML = `
             <select class="res-item-category" required>${options}</select>
-            <input type="text" class="res-item-size" placeholder="Velikost (např. 170 cm)" required>
-            <button type="button" class="btn btn-sm btn-danger btn-remove-res-item">&times; Odebrat</button>
+            <input type="text" class="res-item-size" placeholder="${t('phSize')}" data-i18n-placeholder="phSize" required>
+            <button type="button" class="btn btn-sm btn-danger btn-remove-res-item" data-i18n="btnRemoveItem">${t('btnRemoveItem')}</button>
         `;
 
         row.querySelector('.btn-remove-res-item').addEventListener('click', () => row.remove());
@@ -440,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (requestedItems.length === 0) {
-            showToast('Zvolte alespoň jednu položku k rezervaci.', 'error');
+            showToast(t('errNoItems'), 'error');
             return;
         }
 
@@ -467,11 +535,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!res.ok) {
                 const err = await res.json();
-                throw new Error(err.message || 'Chyba při vytváření rezervace.');
+                throw new Error(err.message || t('errCreateReservation'));
             }
 
             const created = await res.json();
-            showToast(`Rezervace ${created.orderNumber} úspěšně vytvořena! Alokované kusy: ${created.items.map(i => i.inventoryNumber).join(', ')}`, 'success');
+            showToast(t('toastReservationCreated', {
+                number: created.orderNumber,
+                items: created.items.map(i => i.inventoryNumber).join(', ')
+            }), 'success');
 
             // Reset form
             document.getElementById('form-phone-reservation').reset();
@@ -490,19 +561,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const status = document.getElementById('filter-order-status').value;
         const container = document.getElementById('orders-list-container');
         try {
-            container.innerHTML = '<p class="loading-text">Načítám objednávky...</p>';
+            container.innerHTML = `<p class="loading-text">${t('ordersLoading')}</p>`;
             const res = await fetch(`${API}/orders${status ? `?status=${status}` : ''}`);
             const orders = await res.json();
 
             if (orders.length === 0) {
-                container.innerHTML = '<p class="empty-state">Žádné objednávky v tomto stavu.</p>';
+                container.innerHTML = `<p class="empty-state">${t('noOrders')}</p>`;
                 return;
             }
 
             container.innerHTML = orders.map(o => createOrderCardHtml(o)).join('');
             attachOrderCardEvents();
         } catch (err) {
-            container.innerHTML = `<p class="error-text">Chyba: ${err.message}</p>`;
+            container.innerHTML = `<p class="error-text">${t('errGeneric', { message: err.message })}</p>`;
         }
     }
 
@@ -514,14 +585,14 @@ document.addEventListener('DOMContentLoaded', () => {
             <table class="order-items-table">
                 <thead>
                     <tr>
-                        <th>Kus (Inv. č.)</th>
-                        <th>Kategorie</th>
-                        <th>Velikost</th>
-                        <th>Sjednaná sazba</th>
-                        <th>Cena položky</th>
-                        <th>Stav položky</th>
-                        <th>Penále</th>
-                        <th>Akce u pultu</th>
+                        <th>${t('colItemInv')}</th>
+                        <th>${t('colCategory')}</th>
+                        <th>${t('colSize')}</th>
+                        <th>${t('colAgreedRate')}</th>
+                        <th>${t('colItemPrice')}</th>
+                        <th>${t('colItemStatus')}</th>
+                        <th>${t('colLateFee')}</th>
+                        <th>${t('colCounterActions')}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -530,9 +601,9 @@ document.addEventListener('DOMContentLoaded', () => {
         order.items.forEach(item => {
             let itemActionHtml = '';
             if (isReservation) {
-                itemActionHtml = `<button class="btn btn-secondary btn-sm btn-swap-item" data-order-id="${order.id}" data-item-id="${item.id}" data-inv="${item.inventoryNumber}">🔄 Vyměnit kus</button>`;
+                itemActionHtml = `<button class="btn btn-secondary btn-sm btn-swap-item" data-order-id="${order.id}" data-item-id="${item.id}" data-inv="${item.inventoryNumber}">${t('btnSwapItem')}</button>`;
             } else if (isActive && item.status === 'RENTED') {
-                itemActionHtml = `<button class="btn btn-success btn-sm btn-return-item" data-order-id="${order.id}" data-item-id="${item.id}" data-inv="${item.inventoryNumber}">📥 Vrátit kus</button>`;
+                itemActionHtml = `<button class="btn btn-success btn-sm btn-return-item" data-order-id="${order.id}" data-item-id="${item.id}" data-inv="${item.inventoryNumber}">${t('btnReturnItem')}</button>`;
             }
 
             itemsHtml += `
@@ -540,10 +611,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><strong>${item.inventoryNumber}</strong></td>
                     <td>${item.categoryName}</td>
                     <td>${item.size}</td>
-                    <td>${item.dailyRateSnapshot} Kč za den</td>
-                    <td>${item.rentalPrice} Kč</td>
+                    <td>${t('perDay', { amount: money(item.dailyRateSnapshot) })}</td>
+                    <td>${money(item.rentalPrice)}</td>
                     <td>${statusBadge(item.status)}</td>
-                    <td style="color:${item.lateFee > 0 ? '#ef4444' : 'inherit'}; font-weight:${item.lateFee > 0 ? '700' : 'normal'}">${item.lateFee} Kč</td>
+                    <td style="color:${item.lateFee > 0 ? '#ef4444' : 'inherit'}; font-weight:${item.lateFee > 0 ? '700' : 'normal'}">${money(item.lateFee)}</td>
                     <td>${itemActionHtml}</td>
                 </tr>
             `;
@@ -553,11 +624,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let footerActions = '';
         if (isReservation) {
             footerActions += `
-                <button class="btn btn-primary btn-handout-order" data-id="${order.id}">📦 Vydat zákazníkovi</button>
-                <button class="btn btn-danger btn-cancel-order" data-id="${order.id}">❌ Zrušit rezervaci</button>
+                <button class="btn btn-primary btn-handout-order" data-id="${order.id}">${t('btnHandoutOrder')}</button>
+                <button class="btn btn-danger btn-cancel-order" data-id="${order.id}">${t('btnCancelReservation')}</button>
             `;
         }
-        footerActions += `<button class="btn btn-secondary btn-print-contract" data-id="${order.id}">🖨️ Tisk smlouvy</button>`;
+        footerActions += `<button class="btn btn-secondary btn-print-contract" data-id="${order.id}">${t('btnPrintContractShort')}</button>`;
 
         return `
             <div class="order-card" id="order-card-${order.id}">
@@ -567,15 +638,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${statusBadge(order.status)}
                     </div>
                     <div class="order-customer">
-                        👤 <strong>${order.customerName}</strong> | 📞 ${order.customerPhone} | Doklad: ${order.customerIdCard}
+                        <strong>${order.customerName}</strong> | ${order.customerPhone} | ${t('labelDocument')} ${order.customerIdCard}
                     </div>
                 </div>
                 <div class="order-summary-row">
-                    <div><strong>Termín:</strong> ${formatDateTime(order.startsAt)} &rarr; ${formatDateTime(order.expectedEndAt)}</div>
-                    <div><strong>Kauce:</strong> ${order.depositAmount} Kč</div>
-                    <div><strong>Sleva:</strong> ${order.discountAmount} Kč</div>
-                    <div><strong>Celkem k úhradě:</strong> ${order.totalPrice} Kč</div>
-                    ${order.totalLateFee > 0 ? `<div style="color:#ef4444;"><strong>Penále za prodlení:</strong> ${order.totalLateFee} Kč</div>` : ''}
+                    <div><strong>${t('labelTerm')}</strong> ${formatDateTime(order.startsAt)} &rarr; ${formatDateTime(order.expectedEndAt)}</div>
+                    <div><strong>${t('labelDepositShort')}</strong> ${money(order.depositAmount)}</div>
+                    <div><strong>${t('labelDiscount')}</strong> ${money(order.discountAmount)}</div>
+                    <div><strong>${t('labelTotal')}</strong> ${money(order.totalPrice)}</div>
+                    ${order.totalLateFee > 0 ? `<div style="color:#ef4444;"><strong>${t('labelLateFeeTotal')}</strong> ${money(order.totalLateFee)}</div>` : ''}
                 </div>
                 ${itemsHtml}
                 <div class="order-footer-actions">
@@ -615,7 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.btn-cancel-order').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
-                if (confirm('Opravdu chcete stornovat tuto rezervaci?')) {
+                if (confirm(t('confirmCancelOrder'))) {
                     await cancelOrder(id);
                 }
             });
@@ -634,17 +705,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`${API}/orders/${orderId}`);
             const o = await res.json();
             document.getElementById('handout-order-id').value = o.id;
-            document.getElementById('handout-info').innerHTML = `
-                Vydáváte objednávku <strong>${o.orderNumber}</strong> pro <strong>${o.customerName}</strong>.<br>
-                Položky: ${o.items.map(i => i.inventoryNumber).join(', ')}<br>
-                Základní cena výpůjčky: <strong>${o.totalPrice} Kč</strong>
-            `;
+            document.getElementById('handout-info').innerHTML = t('handoutInfo', {
+                number: o.orderNumber,
+                customer: o.customerName,
+                items: o.items.map(i => i.inventoryNumber).join(', '),
+                price: money(o.totalPrice)
+            });
             // Doporučená kauce = 1000 Kč * počet položek (nebo z ceníku)
             document.getElementById('handout-deposit').value = o.items.length * 1000;
             document.getElementById('handout-discount').value = o.discountAmount || 0;
             document.getElementById('modal-handout').classList.remove('hidden');
         } catch (err) {
-            showToast('Chyba: ' + err.message, 'error');
+            showToast(t('errGeneric', { message: err.message }), 'error');
         }
     }
 
@@ -667,10 +739,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (!res.ok) {
                 const err = await res.json();
-                throw new Error(err.message || 'Výdej se nezdařil.');
+                throw new Error(err.message || t('errHandout'));
             }
             document.getElementById('modal-handout').classList.add('hidden');
-            showToast('Objednávka úspěšně vydána zákazníkovi!', 'success');
+            showToast(t('toastHandedOut'), 'success');
             await refreshAllData();
             loadOrders();
         } catch (err) {
@@ -682,7 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             document.getElementById('swap-order-id').value = orderId;
             document.getElementById('swap-rental-item-id').value = rentalItemId;
-            document.getElementById('swap-info').innerHTML = `Výměna kusu <strong>${inv}</strong> za jiný volný kus stejné kategorie a velikosti.`;
+            document.getElementById('swap-info').innerHTML = t('swapInfo', { inv: inv });
 
             const res = await fetch(`${API}/orders/items/${rentalItemId}/available-swaps`);
             const freeItems = await res.json();
@@ -690,12 +762,12 @@ document.addEventListener('DOMContentLoaded', () => {
             select.innerHTML = '';
 
             if (freeItems.length === 0) {
-                select.innerHTML = '<option value="">-- Žádný jiný volný kus v tomto termínu --</option>';
+                select.innerHTML = `<option value="">${t('noSwapItems')}</option>`;
             } else {
                 freeItems.forEach(item => {
                     const opt = document.createElement('option');
                     opt.value = item.id;
-                    opt.textContent = `${item.inventoryNumber} – velikost ${item.size} (${item.conditionState})`;
+                    opt.textContent = t('swapOption', { inv: item.inventoryNumber, size: item.size, condition: item.conditionState });
                     select.appendChild(opt);
                 });
             }
@@ -713,7 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newItemId = document.getElementById('swap-new-item').value;
 
         if (!newItemId) {
-            showToast('Vyberte platný náhradní kus.', 'error');
+            showToast(t('errSelectSwap'), 'error');
             return;
         }
 
@@ -725,10 +797,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (!res.ok) {
                 const err = await res.json();
-                throw new Error(err.message || 'Výměna se nezdařila.');
+                throw new Error(err.message || t('errSwap'));
             }
             document.getElementById('modal-swap').classList.add('hidden');
-            showToast('Kus byl úspěšně vyměněn!', 'success');
+            showToast(t('toastSwapped'), 'success');
             loadOrders();
         } catch (err) {
             showToast(err.message, 'error');
@@ -738,7 +810,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openReturnModal(orderId, rentalItemId, inv) {
         document.getElementById('return-order-id').value = orderId;
         document.getElementById('return-item-id').value = rentalItemId;
-        document.getElementById('return-info').innerHTML = `Zaznamenáváte vrácení kusu <strong>${inv}</strong>.`;
+        document.getElementById('return-info').innerHTML = t('returnInfo', { inv: inv });
         document.getElementById('return-damaged').checked = false;
         document.getElementById('damage-details-group').classList.add('hidden');
         document.getElementById('return-damage-desc').value = '';
@@ -769,10 +841,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (!res.ok) {
                 const err = await res.json();
-                throw new Error(err.message || 'Vrácení se nezdařilo.');
+                throw new Error(err.message || t('errReturn'));
             }
             document.getElementById('modal-return').classList.add('hidden');
-            showToast('Kus byl úspěšně vrácen' + (isDamaged ? ' a odeslán do servisu!' : '.'), 'success');
+            showToast(t(isDamaged ? 'toastReturnedDamaged' : 'toastReturned'), 'success');
             await refreshAllData();
             loadOrders();
         } catch (err) {
@@ -783,8 +855,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function cancelOrder(id) {
         try {
             const res = await fetch(`${API}/orders/${id}/cancel`, { method: 'POST' });
-            if (!res.ok) throw new Error('Nelze zrušit objednávku.');
-            showToast('Objednávka byla zrušena a kusy uvolněny.', 'success');
+            if (!res.ok) throw new Error(t('errCancelOrder'));
+            showToast(t('toastOrderCancelled'), 'success');
             await refreshAllData();
             loadOrders();
         } catch (err) {
@@ -801,34 +873,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const area = document.getElementById('printable-contract-area');
 
             area.innerHTML = `
-                <h2>SMLOUVA O VÝPŮJČCE SPORTOVNÍHO VYBAVENÍ</h2>
-                <p style="text-align:center; font-size:10pt; margin-bottom:1.5rem;">Číslo smlouvy: <strong>${o.orderNumber}</strong></p>
+                <h2>${t('contractHeading')}</h2>
+                <p style="text-align:center; font-size:10pt; margin-bottom:1.5rem;">${t('contractNumber', { number: o.orderNumber })}</p>
 
                 <div class="contract-parties">
                     <div>
-                        <strong>PŮJČOVNA (Pronajímatel):</strong><br>
+                        <strong>${t('contractLessor')}</strong><br>
                         Hory a voda – Martin Řehák<br>
-                        IČO: 12345678<br>
-                        Sídlo: Pec pod Sněžkou 12<br>
-                        Telefon: +420 603 123 456
+                        ${t('contractCompanyId')} 12345678<br>
+                        ${t('contractSeat')} Pec pod Sněžkou 12<br>
+                        ${t('labelPhone')} +420 603 123 456
                     </div>
                     <div>
-                        <strong>ZÁKAZNÍK (Nájemce):</strong><br>
-                        Jméno: <strong>${o.customerName}</strong><br>
-                        Telefon: ${o.customerPhone}<br>
-                        Číslo OP nebo pasu: ${o.customerIdCard}
+                        <strong>${t('contractLessee')}</strong><br>
+                        ${t('labelName')} <strong>${o.customerName}</strong><br>
+                        ${t('labelPhone')} ${o.customerPhone}<br>
+                        ${t('labelIdOrPassport')} ${o.customerIdCard}
                     </div>
                 </div>
 
-                <p><strong>Předmět výpůjčky (Vypůjčené položky):</strong></p>
+                <p><strong>${t('contractSubject')}</strong></p>
                 <table class="contract-table">
                     <thead>
                         <tr>
-                            <th>Inventární číslo</th>
-                            <th>Kategorie</th>
-                            <th>Velikost</th>
-                            <th>Sjednaná denní sazba</th>
-                            <th>Celkem nájemné</th>
+                            <th>${t('colInventoryNumber')}</th>
+                            <th>${t('colCategory')}</th>
+                            <th>${t('colSize')}</th>
+                            <th>${t('colAgreedDailyRate')}</th>
+                            <th>${t('colTotalRent')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -837,38 +909,36 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <td><strong>${i.inventoryNumber}</strong></td>
                                 <td>${i.categoryName}</td>
                                 <td>${i.size}</td>
-                                <td>${i.dailyRateSnapshot} Kč za den</td>
-                                <td>${i.rentalPrice} Kč</td>
+                                <td>${t('perDay', { amount: money(i.dailyRateSnapshot) })}</td>
+                                <td>${money(i.rentalPrice)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
 
                 <div style="font-size:10pt; margin-bottom:1rem;">
-                    <strong>Doba trvání výpůjčky:</strong> Od ${formatDateTime(o.startsAt)} do ${formatDateTime(o.expectedEndAt)}<br>
-                    <strong>Celková cena výpůjčky:</strong> ${o.totalPrice} Kč (Sleva: ${o.discountAmount} Kč)<br>
-                    <strong>Složená hotovostní jistina (kauce):</strong> ${o.depositAmount} Kč
+                    ${t('contractPeriod', { from: formatDateTime(o.startsAt), to: formatDateTime(o.expectedEndAt) })}<br>
+                    ${t('contractTotal', { total: money(o.totalPrice), discount: money(o.discountAmount) })}<br>
+                    ${t('contractDeposit', { deposit: money(o.depositAmount) })}
                 </div>
 
                 <p style="font-size:9pt; color:#444;">
-                    Nájemce stvrzuje převzetí výše uvedeného vybavení v bezvadném technickém stavu.
-                    Zavazuje se vrátit vybavení do dohodnutého termínu. Za pozdní vrácení se účtuje penále za každý započatý den.
-                    V případě poškození či ztráty bude vzniklá škoda stržena ze složené jistiny.
+                    ${t('contractTerms')}
                 </p>
 
                 <div class="contract-signatures">
                     <div class="signature-box">
-                        Za půjčovnu: Martin Řehák
+                        ${t('contractSignLessor')}
                     </div>
                     <div class="signature-box">
-                        Převzal nájemce (podpis)
+                        ${t('contractSignLessee')}
                     </div>
                 </div>
             `;
 
             document.getElementById('modal-print-contract').classList.remove('hidden');
         } catch (err) {
-            showToast('Chyba při přípravě smlouvy: ' + err.message, 'error');
+            showToast(t('errContract', { message: err.message }), 'error');
         }
     }
 
@@ -902,7 +972,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const grid = document.getElementById('cards-grid');
         if (filtered.length === 0) {
-            grid.innerHTML = '<p class="empty-state">Žádné kusy neodpovídají filtrům.</p>';
+            grid.innerHTML = `<p class="empty-state">${t('noItemsMatch')}</p>`;
             return;
         }
 
@@ -918,23 +988,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="inv-group-header">
                         <h3>${catName}</h3>
                         <span class="inv-group-counts">
-                            <span class="cnt-avail" title="Volné">${count(list, 'AVAILABLE')}</span>
-                            <span class="cnt-service" title="V servisu">${count(list, 'IN_SERVICE')}</span>
-                            <span class="cnt-rented" title="Půjčeno nebo rezervováno">${count(list, 'RENTED') + count(list, 'RESERVED')}</span>
+                            <span class="cnt-avail" title="${t('statusAvailable')}">${count(list, 'AVAILABLE')}</span>
+                            <span class="cnt-service" title="${t('statusInService')}">${count(list, 'IN_SERVICE')}</span>
+                            <span class="cnt-rented" title="${t('countRentedTitle')}">${count(list, 'RENTED') + count(list, 'RESERVED')}</span>
                         </span>
                     </div>
                     <table class="inv-table">
                         <tbody>
                             ${list.map(item => `
-                                <tr>
+                                <tr title="${item.conditionState}">
                                     <td class="inv-num">${item.inventoryNumber}</td>
                                     <td>${item.size}</td>
                                     <td class="inv-year">${item.purchaseYear}</td>
                                     <td>${statusBadge(item.status)}</td>
-                                    <td class="inv-note" title="${item.conditionState}">${item.conditionState}</td>
                                     <td class="inv-actions">
-                                        ${item.status === 'AVAILABLE' ? `<button class="btn-icon btn-action-service" data-id="${item.id}" data-inv="${item.inventoryNumber}" title="Odeslat do servisu">🛠️</button>` : ''}
-                                        ${item.status === 'IN_SERVICE' ? `<button class="btn-icon btn-action-restore" data-id="${item.id}" data-inv="${item.inventoryNumber}" title="Ukončit servis">✅</button>` : ''}
+                                        ${item.status === 'AVAILABLE' ? `<button class="btn-mini btn-action-service" data-id="${item.id}" data-inv="${item.inventoryNumber}">${t('btnSendToService')}</button>` : ''}
+                                        ${item.status === 'IN_SERVICE' ? `<button class="btn-mini btn-action-restore" data-id="${item.id}" data-inv="${item.inventoryNumber}">${t('btnEndService')}</button>` : ''}
                                     </td>
                                 </tr>
                             `).join('')}
@@ -947,14 +1016,14 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.querySelectorAll('.btn-action-service').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
-                const reason = prompt('Zadejte důvod odeslání do servisu:');
+                const reason = prompt(t('promptServiceReason'));
                 if (reason) {
                     await fetch(`${API}/items/${id}/status`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ status: 'IN_SERVICE', note: reason })
                     });
-                    showToast('Kus byl přesunut do servisu.', 'success');
+                    showToast(t('toastSentToService'), 'success');
                     await refreshAllData();
                     loadInventory();
                 }
@@ -964,13 +1033,13 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.querySelectorAll('.btn-action-restore').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
-                if (confirm('Ukončit servis a vrátit kus mezi volné?')) {
+                if (confirm(t('confirmEndService'))) {
                     await fetch(`${API}/items/${id}/status`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: 'AVAILABLE', note: 'Servis hotov' })
+                        body: JSON.stringify({ status: 'AVAILABLE', note: t('serviceDoneNote') })
                     });
-                    showToast('Kus vrácen do fondu volných kusů.', 'success');
+                    showToast(t('toastServiceEnded'), 'success');
                     await refreshAllData();
                     loadInventory();
                 }
@@ -997,11 +1066,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (!res.ok) {
                 const err = await res.json();
-                throw new Error(err.message || 'Chyba při ukládání.');
+                throw new Error(err.message || t('errSave'));
             }
             document.getElementById('modal-create').classList.add('hidden');
             document.getElementById('form-create-item').reset();
-            showToast('Nový kus zaevidován do inventáře!', 'success');
+            showToast(t('toastItemCreated'), 'success');
             await refreshAllData();
             loadInventory();
         } catch (err) {
@@ -1017,18 +1086,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`${API}/customers${query ? `?query=${encodeURIComponent(query)}` : ''}`);
             const list = await res.json();
             if (list.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Žádní zákazníci nenalezeni.</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">${t('noCustomers')}</td></tr>`;
                 return;
             }
             tbody.innerHTML = list.map(c => `
                 <tr>
                     <td><strong>${c.firstName} ${c.lastName}</strong></td>
-                    <td>📞 ${c.phone}</td>
+                    <td>${c.phone}</td>
                     <td>${c.idCardNumber}</td>
                     <td>${c.note || '—'}</td>
                     <td>
                         <button class="btn btn-secondary btn-sm" onclick="startReservationForCustomer('${c.phone}', '${c.firstName}', '${c.lastName}', '${c.idCardNumber}')">
-                            📞 Nová rezervace
+                            ${t('btnNewReservation')}
                         </button>
                     </td>
                 </tr>
@@ -1066,21 +1135,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`${API}/reports/overdue`);
             const list = await res.json();
             if (list.length === 0) {
-                el.innerHTML = '<p class="empty-state">Výborně! Žádné výpůjčky nejsou po termínu.</p>';
+                el.innerHTML = `<p class="empty-state">${t('noOverdue')}</p>`;
                 return;
             }
             el.innerHTML = list.map(o => `
                 <div class="mini-order-item" style="border-left: 3px solid #ef4444;">
                     <div class="mini-order-info">
-                        <h4>${o.orderNumber} – ${o.customerName} (📞 ${o.customerPhone})</h4>
-                        <p>Očekávané vrácení: <strong>${formatDateTime(o.expectedEndAt)}</strong></p>
-                        <p>Nevrácené kusy: ${o.items.filter(i => i.status === 'RENTED').map(i => i.inventoryNumber).join(', ')}</p>
-                        <p style="color:#ef4444;">Naskakující penále: <strong>${o.totalLateFee} Kč</strong></p>
+                        <h4>${o.orderNumber} – ${o.customerName} (${o.customerPhone})</h4>
+                        <p>${t('labelExpectedReturn')} <strong>${formatDateTime(o.expectedEndAt)}</strong></p>
+                        <p>${t('labelUnreturnedItems')} ${o.items.filter(i => i.status === 'RENTED').map(i => i.inventoryNumber).join(', ')}</p>
+                        <p style="color:#ef4444;">${t('labelAccruingFee')} <strong>${money(o.totalLateFee)}</strong></p>
                     </div>
                 </div>
             `).join('');
         } catch (err) {
-            el.innerHTML = '<p class="error-text">Chyba přehledu</p>';
+            el.innerHTML = `<p class="error-text">${t('errReport')}</p>`;
         }
     }
 
@@ -1090,20 +1159,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`${API}/reports/active-services`);
             const list = await res.json();
             if (list.length === 0) {
-                el.innerHTML = '<p class="empty-state">V dílně momentálně není žádné vybavení.</p>';
+                el.innerHTML = `<p class="empty-state">${t('noService')}</p>`;
                 return;
             }
             el.innerHTML = list.map(s => `
                 <div class="mini-order-item" style="border-left: 3px solid #f59e0b;">
                     <div class="mini-order-info">
                         <h4>${s.inventoryNumber} – ${s.categoryName} (${s.size})</h4>
-                        <p>V servisu od: ${formatDateTime(s.startedAt)}</p>
-                        <p>Popis závady: <em>${s.description}</em></p>
+                        <p>${t('labelInServiceSince')} ${formatDateTime(s.startedAt)}</p>
+                        <p>${t('labelDefect')} <em>${s.description}</em></p>
                     </div>
                 </div>
             `).join('');
         } catch (err) {
-            el.innerHTML = '<p class="error-text">Chyba přehledu</p>';
+            el.innerHTML = `<p class="error-text">${t('errReport')}</p>`;
         }
     }
 
@@ -1119,11 +1188,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${i.size}</td>
                     <td>${statusBadge(i.status)}</td>
                     <td><strong>${i.usageCount} &times;</strong></td>
-                    <td>${i.totalRevenue} Kč</td>
+                    <td>${money(i.totalRevenue)}</td>
                 </tr>
             `).join('');
         } catch (err) {
-            tbody.innerHTML = '<tr><td colspan="6">Chyba načítání</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="6">${t('errLoading')}</td></tr>`;
         }
     }
 
@@ -1132,26 +1201,32 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderPricingTable() {
         const tbody = document.getElementById('pricing-table-body');
         if (priceRules.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Ceník není nastaven.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="5" class="empty-state">${t('noPricing')}</td></tr>`;
             return;
         }
         tbody.innerHTML = priceRules.map(r => `
             <tr>
                 <td><strong>${r.categoryName}</strong></td>
-                <td>${r.dailyRate} Kč</td>
-                <td><strong style="color:var(--status-avail-text);">${r.weekendRate} Kč</strong></td>
-                <td>${r.depositRate} Kč</td>
-                <td>${r.validFrom}</td>
+                <td>${money(r.dailyRate)}</td>
+                <td><strong style="color:var(--status-avail-text);">${money(r.weekendRate)}</strong></td>
+                <td>${money(r.depositRate)}</td>
+                <td>${formatDate(r.validFrom)}</td>
             </tr>
         `).join('');
     }
 
     // ================= HELPERS =================
 
+    function formatDate(isoString) {
+        if (!isoString) return '—';
+        return new Date(isoString).toLocaleDateString(LANGUAGES[currentLang].locale);
+    }
+
     function formatDateTime(isoString) {
         if (!isoString) return '—';
         const d = new Date(isoString);
-        return d.toLocaleDateString('cs-CZ') + ' ' + d.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+        const locale = LANGUAGES[currentLang].locale;
+        return d.toLocaleDateString(locale) + ' ' + d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
     }
 
     function formatInputDateTime(date) {
