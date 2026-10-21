@@ -342,6 +342,8 @@ Aktuální stav: **20 testů, 0 selhání** (2026-10-07).
 
 ## 8. Deník postupu a změn (Changelog)
 
+- **2026-10-21 (Z4 – vzhled nepůsobí jako od AI)**:
+  - Odstraněny emoji ze záložek navigace, ikona vlevo nahoře a štítek „Půjčovna vybavení“ vedle názvu (včetně nepoužívaných stylů).
 - **2026-10-21 (Z2 – inventář po česku a na jednu obrazovku)**:
   - Štítky stavů v celém UI zobrazují české názvy (sdílená mapa `STATUS_LABELS` v `app.js`) místo hodnot enumů (AVAILABLE, IN_SERVICE…).
   - Záložka Inventář: velké karty nahrazeny kompaktním přehledem – kusy seskupené podle kategorie (počty volné, v servisu, půjčeno), jeden řádek na kus, skupiny vedle sebe; nadpis a filtry v jedné řádce.
