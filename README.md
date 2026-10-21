@@ -342,6 +342,10 @@ Aktuální stav: **20 testů, 0 selhání** (2026-10-07).
 
 ## 8. Deník postupu a změn (Changelog)
 
+- **2026-10-21 (Z2 – inventář po česku a na jednu obrazovku)**:
+  - Štítky stavů v celém UI zobrazují české názvy (sdílená mapa `STATUS_LABELS` v `app.js`) místo hodnot enumů (AVAILABLE, IN_SERVICE…).
+  - Záložka Inventář: velké karty nahrazeny kompaktním přehledem – kusy seskupené podle kategorie (počty volné, v servisu, půjčeno), jeden řádek na kus, skupiny vedle sebe; nadpis a filtry v jedné řádce.
+  - Migrace `V5__rename_categories_cz.sql`: názvy kategorií bez anglicismů („Sjezdové lyže“, „Běžky“).
 - **2026-10-21 (Z1 – texty UI podle klienta)**:
   - Ve všech textech UI nahrazen znak „&“ slovem „a“, lomítka ve významu „nebo“ přepsána slovy, odstraněny anglicismy (swap, set, report). Pravidlo zapsáno do AGENTS.md (oddíl 6).
 - **2026-10-07 večer (Dokončení a ověření dema – Claude Code)**:

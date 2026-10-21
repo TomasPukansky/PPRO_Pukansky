@@ -230,40 +230,32 @@
 
         <!-- ================= TAB 4: INVENTÁŘ A SERVIS ================= -->
         <section id="tab-inventory" class="tab-pane">
-            <div class="pane-header">
-                <div>
-                    <h2>🎿 Inventář a servisní dílna</h2>
-                    <p class="pane-desc">Evidence konkrétních inventárních kusů (nahrazuje lihovku) a přehled servisních zásahů.</p>
+            <!-- Kompaktní hlavička: nadpis, filtry a akce v jedné řádce -->
+            <div class="inv-toolbar">
+                <h2>🎿 Inventář a servis</h2>
+                <div class="filter-group">
+                    <label for="filter-category">Kategorie:</label>
+                    <select id="filter-category">
+                        <option value="">Všechny kategorie</option>
+                    </select>
                 </div>
-                <button class="btn btn-primary" id="btn-open-create-modal">+ Zaevidovat nový kus</button>
+                <div class="filter-group">
+                    <label for="filter-status">Stav:</label>
+                    <select id="filter-status">
+                        <option value="">Všechny stavy</option>
+                        <option value="AVAILABLE">Volné</option>
+                        <option value="IN_SERVICE">V servisu</option>
+                        <option value="RENTED">Půjčeno</option>
+                        <option value="RESERVED">Rezervováno</option>
+                    </select>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="input-search" placeholder="Hledat číslo (SKI-001) nebo velikost...">
+                </div>
+                <button class="btn btn-primary btn-sm" id="btn-open-create-modal">+ Zaevidovat nový kus</button>
             </div>
 
-            <!-- Controls bar -->
-            <div class="controls-section">
-                <div class="controls-left">
-                    <div class="filter-group">
-                        <label for="filter-category">Kategorie:</label>
-                        <select id="filter-category">
-                            <option value="">Všechny kategorie</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="filter-status">Stav:</label>
-                        <select id="filter-status">
-                            <option value="">Všechny stavy</option>
-                            <option value="AVAILABLE">Volné k výpůjčce</option>
-                            <option value="IN_SERVICE">V servisu (blokováno)</option>
-                            <option value="RENTED">Půjčeno zákazníkovi</option>
-                            <option value="RESERVED">Rezervováno</option>
-                        </select>
-                    </div>
-                    <div class="search-box">
-                        <input type="text" id="input-search" placeholder="Hledat číslo (SKI-001) nebo velikost...">
-                    </div>
-                </div>
-            </div>
-
-            <div class="cards-grid" id="cards-grid">
+            <div class="inv-groups" id="cards-grid">
                 <!-- Plněno přes JS -->
             </div>
         </section>

@@ -6,6 +6,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let priceRules = [];
     let allInventoryItems = [];
 
+    // České názvy stavů kusů, položek a objednávek (hodnoty enumů z backendu)
+    const STATUS_LABELS = {
+        AVAILABLE: 'Volné',
+        RESERVED: 'Rezervováno',
+        RENTED: 'Půjčeno',
+        IN_SERVICE: 'V servisu',
+        RETIRED: 'Vyřazeno',
+        RETURNED: 'Vráceno',
+        DAMAGED: 'Poškozeno',
+        RESERVATION: 'Rezervace',
+        ACTIVE: 'Aktivní',
+        CLOSED: 'Uzavřeno',
+        EXPIRED: 'Propadlo',
+        CANCELLED: 'Zrušeno'
+    };
+    const statusLabel = (s) => STATUS_LABELS[s] || s;
+    const statusBadge = (s) => `<span class="badge-status badge-${s}">${statusLabel(s)}</span>`;
+
     // DOM Elements
     const toast = document.getElementById('toast-message');
 
@@ -141,7 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
         selects.forEach(select => {
             if (!select) return;
-            select.innerHTML = '<option value="">-- Vyberte kategorii --</option>';
+            select.innerHTML = select.id === 'filter-category'
+                ? '<option value="">Všechny kategorie</option>'
+                : '<option value="">-- Vyberte kategorii --</option>';
             categories.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat.id;
@@ -522,7 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${item.size}</td>
                     <td>${item.dailyRateSnapshot} Kč za den</td>
                     <td>${item.rentalPrice} Kč</td>
-                    <td><span class="badge-status badge-${item.status}">${item.status}</span></td>
+                    <td>${statusBadge(item.status)}</td>
                     <td style="color:${item.lateFee > 0 ? '#ef4444' : 'inherit'}; font-weight:${item.lateFee > 0 ? '700' : 'normal'}">${item.lateFee} Kč</td>
                     <td>${itemActionHtml}</td>
                 </tr>
@@ -544,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="order-card-header">
                     <div class="order-title">
                         <h3>${order.orderNumber}</h3>
-                        <span class="badge-status badge-${order.status}">${order.status}</span>
+                        ${statusBadge(order.status)}
                     </div>
                     <div class="order-customer">
                         👤 <strong>${order.customerName}</strong> | 📞 ${order.customerPhone} | Doklad: ${order.customerIdCard}
@@ -886,26 +906,43 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        grid.innerHTML = filtered.map(item => `
-            <div class="equipment-card">
-                <div class="card-top">
-                    <div>
-                        <span class="card-inv">${item.inventoryNumber}</span>
-                        <span class="card-category">${item.categoryName}</span>
+        // Kompaktní přehled: kusy seskupené podle kategorie, jeden řádek na kus, skupiny vedle sebe
+        const groups = {};
+        filtered.forEach(item => (groups[item.categoryName] ||= []).push(item));
+        const count = (list, s) => list.filter(i => i.status === s).length;
+
+        grid.innerHTML = Object.keys(groups).sort().map(catName => {
+            const list = groups[catName].sort((a, b) => a.inventoryNumber.localeCompare(b.inventoryNumber));
+            return `
+                <div class="inv-group">
+                    <div class="inv-group-header">
+                        <h3>${catName}</h3>
+                        <span class="inv-group-counts">
+                            <span class="cnt-avail" title="Volné">${count(list, 'AVAILABLE')}</span>
+                            <span class="cnt-service" title="V servisu">${count(list, 'IN_SERVICE')}</span>
+                            <span class="cnt-rented" title="Půjčeno nebo rezervováno">${count(list, 'RENTED') + count(list, 'RESERVED')}</span>
+                        </span>
                     </div>
-                    <span class="badge-status badge-${item.status}">${item.status}</span>
+                    <table class="inv-table">
+                        <tbody>
+                            ${list.map(item => `
+                                <tr>
+                                    <td class="inv-num">${item.inventoryNumber}</td>
+                                    <td>${item.size}</td>
+                                    <td class="inv-year">${item.purchaseYear}</td>
+                                    <td>${statusBadge(item.status)}</td>
+                                    <td class="inv-note" title="${item.conditionState}">${item.conditionState}</td>
+                                    <td class="inv-actions">
+                                        ${item.status === 'AVAILABLE' ? `<button class="btn-icon btn-action-service" data-id="${item.id}" data-inv="${item.inventoryNumber}" title="Odeslat do servisu">🛠️</button>` : ''}
+                                        ${item.status === 'IN_SERVICE' ? `<button class="btn-icon btn-action-restore" data-id="${item.id}" data-inv="${item.inventoryNumber}" title="Ukončit servis">✅</button>` : ''}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
                 </div>
-                <div class="card-details">
-                    <div class="detail-row"><span class="detail-lbl">Velikost:</span><span class="detail-val">${item.size}</span></div>
-                    <div class="detail-row"><span class="detail-lbl">Rok pořízení:</span><span class="detail-val">${item.purchaseYear}</span></div>
-                    <div class="condition-note">${item.conditionState}</div>
-                </div>
-                <div class="card-footer">
-                    ${item.status === 'AVAILABLE' ? `<button class="btn btn-action-service" data-id="${item.id}" data-inv="${item.inventoryNumber}">🛠️ Odeslat do servisu</button>` : ''}
-                    ${item.status === 'IN_SERVICE' ? `<button class="btn btn-action-restore" data-id="${item.id}" data-inv="${item.inventoryNumber}">✅ Ukončit servis</button>` : ''}
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         grid.querySelectorAll('.btn-action-service').forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -1080,7 +1117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><strong>${i.inventoryNumber}</strong></td>
                     <td>${i.categoryName}</td>
                     <td>${i.size}</td>
-                    <td><span class="badge-status badge-${i.status}">${i.status}</span></td>
+                    <td>${statusBadge(i.status)}</td>
                     <td><strong>${i.usageCount} &times;</strong></td>
                     <td>${i.totalRevenue} Kč</td>
                 </tr>
