@@ -57,21 +57,24 @@ ktorý sa riadi [AGENTS.md](AGENTS.md) a [README.md](README.md) (SSOT). Claude k
 - Push iba po schválení: pred pushom dať používateľovi rýchly sumár (commity, zmeny), on potvrdí. (pokyn 2026-10-07)
 - Handoff: Gemini po dokončení vytvorí `GEMINI-STATUS.md` (1. riadok `STAV: HOTOVO` / `STAV: BLOKOVÁNO`). Až potom Claude berie prvý build dema za ukončený a preberá overenie. (pokyn 2026-10-07)
 
-## ▶ STAV NA POKRAČOVANIE (aktualizované 2026-10-17, pred reštartom PC)
+## ▶ STAV NA POKRAČOVANIE (aktualizované 2026-10-21, koniec session)
 
-- **Demo HOTOVÉ**, build OK, **20/20 testov OK**. Kontajnery `ppro-rental` sú zastavené (Docker aj Antigravity zavreté).
-  Spustenie po reštarte: zapnúť Docker Desktop → `docker compose -p ppro-rental up -d` → http://localhost:8080
-  (čistá DB + rebuild: `bash ../ppro-up.sh`).
-- Testy: `docker build --target builder -t ppro-rental-builder . && docker run --rm --name ppro-rental-maven ppro-rental-builder mvn -B test`.
-- Git: všetko commitnuté. Na origin/main je `9628a07` (push 2026-10-11, 9 commitov vrátane MVP b2572bc z 30. 9.).
-  Lokálne navyše len zápisy do denníka (`7f43d07` + tento) – **nepushnuté**, push len po sumári a potvrdení používateľa.
-- Gemini: posledný prompt #8 (#6/#7 neplatné, nič nemeniť). Po reštarte Antigravity sa mení port/token → `../agy-send.ps1` ich nájde sám.
-- **Ďalej (čaká na používateľa):**
-  1. spätná väzba klienta (Řehák) → zapísať ako Z1.. a zadať Gemini zmeny,
-  2. vyplniť dokumentáciu `C:\Users\mento\Documents\skola\PPRO\PPRO-dokumentace-sablona-v1.docx`
-     (1. Popis řešení, 2. Rozhodnutí R1.., 3. Změny Z1..) – používateľ ešte nepovedal, či teraz alebo po spätnej väzbe.
-- Známe drobnosti dema: v matici sa „0 ks“ zobrazuje zelenou; výmena ponúka aj iné veľkosti tej istej kategórie;
-  kusy práve v servise sa nedajú rezervovať ani na budúci termín.
+- **Spätná väzba klienta Z1–Z4 HOTOVÁ** (robil Claude, Gemini na prompty #9–#12 nereagoval):
+  Z1 texty bez „&“, lomiek a anglicizmov · Z2 české stavy + kompaktný inventár na 1 obrazovku + migrácia V5 ·
+  Z3 preklady `static/i18n/app_cz.arb` a `app_en.arb` (241 kľúčov), prepínač CZ/EN, localStorage `lang` ·
+  Z4 **žiadne emoji nikde**, bez ikony a štítku vľavo hore. Pravidlá v AGENTS.md oddiel 6 a 7.
+- Build OK, **20/20 testov OK**. Git: **pushnuté** na origin/main `f885e35` (2026-10-21, so súhlasom používateľa);
+  lokálne navyše len tento zápis do denníka (nepushnutý).
+- Aplikácia beží (`docker compose -p ppro-rental up -d` → http://localhost:8080). Reset s čistou DB (`bash ../ppro-up.sh`)
+  Claude Code auto mode zablokoval (`down -v`) – používateľ ho môže spustiť sám cez `! bash C:/Users/mento/Documents/skola/PRPA/ppro-up.sh`.
+- Dokumentácia docx: tabuľka 3 „Změny požadované klientem“ = Z1–Z4 (hotovo). Oddiely 1 (Popis řešení) a 2 (Rozhodnutí R1..)
+  sú stále len šablóna – čaká na používateľa. Záloha pôvodného docx: `PPRO-dokumentace-sablona-v1.docx.bak-2026-10-21`.
+- Gemini: posledný prompt #14 (súhrn Z1–Z4, nič nemeniť). Ak nereaguje, Claude robí prácu sám a priebeh píše do chatu
+  v Antigravity („INFO od Claude Code“), aby ho používateľ videl. agentapi nevie chat otvoriť ani schvaľovať príkazy.
+- Overenie UI: headless Edge cez DevTools (`--remote-debugging-port`, skript v scratchpade) – screenshoty CZ/EN pri 1366×768.
+- Známe obmedzenia: hlášky z backendu a názvy kategórií (dáta) zostávajú česky aj v EN; v matici „0 ks“ zelenou;
+  výmena ponúka aj iné veľkosti; kusy v servise nejdú rezervovať ani na budúci termín.
+- **Ďalej:** ďalšia spätná väzba klienta (Z5..) alebo doplniť docx oddiely 1 a 2.
 
 ### 2026-10-21
 - Demo spustené (`docker compose -p ppro-rental up -d`), HTTP 200.
@@ -91,3 +94,4 @@ ktorý sa riadi [AGENTS.md](AGENTS.md) a [README.md](README.md) (SSOT). Claude k
 - Z3 + Z4 = `b26bb1f` (ARB 241 kľúčov, prepínač CZ/EN, localStorage `lang`, UI bez emoji). Testy 20/20, app prebuildovaná,
   overené headless Edge cez DevTools (CZ aj EN, jazyk sa po reloade pamätá, inventár na jednu obrazovku pri 1366×768).
   Docx: Z3 a Z4 = hotovo. Gemini dostal súhrn (prompt #14). Commity Z1–Z4 sú **nepushnuté**.
+- 2026-10-21 push `f885e35` na origin; reset DB zablokovaný, app len rebuild + recreate.
