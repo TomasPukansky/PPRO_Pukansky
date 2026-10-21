@@ -72,3 +72,22 @@ ktorý sa riadi [AGENTS.md](AGENTS.md) a [README.md](README.md) (SSOT). Claude k
      (1. Popis řešení, 2. Rozhodnutí R1.., 3. Změny Z1..) – používateľ ešte nepovedal, či teraz alebo po spätnej väzbe.
 - Známe drobnosti dema: v matici sa „0 ks“ zobrazuje zelenou; výmena ponúka aj iné veľkosti tej istej kategórie;
   kusy práve v servise sa nedajú rezervovať ani na budúci termín.
+
+### 2026-10-21
+- Demo spustené (`docker compose -p ppro-rental up -d`), HTTP 200.
+- **Z1 (klient Řehák):** v texte UI nahradiť „&“ klasickým „a“ a vyhýbať sa podobným znakom (lomítko namiesto „nebo“ ap.).
+  Zadané Gemini ako **prompt #9** (UI texty, pravidlo do AGENTS.md, changelog, testy, rebuild, commit bez pushu).
+- Doplnenie Z1: v texte UI nepoužívať anglicizmy, ak nejde o oficiálny názov → **prompt #10**.
+- **Z2 (klient):** inventár/servis po česky (štítky stavu zobrazovali enum AVAILABLE/IN_SERVICE) a záložku Inventář
+  usporiadať tak, aby bola viditeľná naraz bez dlhého scrollu kariet → **prompt #11**.
+- **Z3 (klient):** preklady v `app_cz.arb` a `app_en.arb`, prepínač jazyka CZ/EN, voľba uložená v localStorage → **prompt #12**
+  (poradie: po Z1, Z2; samostatný commit).
+- Gemini na #9–#12 nereagoval (žiadne zmeny ~15 min) → podľa pokynu používateľa robí Z1–Z3 Claude (prompt #13 = Gemini nič nemeniť).
+  Priebeh píšem aj do Antigravity chatu (správy „INFO od Claude Code“), aby ho používateľ videl.
+  Z1 = `9296da0`, Z2 = `04897d9` (+ migrácia V5 premenovanie kategórií), testy 20/20, app prebuildovaná.
+- **Z4 (klient):** „vyzerá to ako AI“ – emoji v záložkách navigácie, emoji vľavo hore a tag „Půjčovna vybavení“ vedľa názvu.
+  Z1–Z4 zapísané do docx (tabuľka 3, nahradený vzorový riadok; záloha `PPRO-dokumentace-sablona-v1.docx.bak-2026-10-21`).
+- **Pokyn používateľa:** nepoužívať **žiadne emoji nikde** (rozšírenie Z4) – zapísané do AGENTS.md oddiel 6.
+- Z3 + Z4 = `b26bb1f` (ARB 241 kľúčov, prepínač CZ/EN, localStorage `lang`, UI bez emoji). Testy 20/20, app prebuildovaná,
+  overené headless Edge cez DevTools (CZ aj EN, jazyk sa po reloade pamätá, inventár na jednu obrazovku pri 1366×768).
+  Docx: Z3 a Z4 = hotovo. Gemini dostal súhrn (prompt #14). Commity Z1–Z4 sú **nepushnuté**.

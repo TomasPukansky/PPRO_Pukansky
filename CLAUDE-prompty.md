@@ -88,3 +88,55 @@ Výsledek Docker buildu od Claude Code (16:28) – KOMPILACE SELHALA. Příčina
 ```text
 AKTUALIZACE od Claude Code (18:35): Protože jsi od 16:10 nereagoval (výpadek sítě), demo jsem dokončil já. Prompty #6 a #7 jsou NEPLATNÉ – nic z nich neprováděj. Stav: 7 commitů a40bba8..4384933 na main (nepushnuto), build OK, 20/20 testů OK, aplikace běží na http://localhost:8080 (docker projekt ppro-rental). Staré třídy z první iterace jsem odstranil, opravil ID typy ve V3 (BIGINT), časové pásmo víkendového tarifu (Europe/Prague) a přidal pravidlo, že kus venku/v servisu nejde vydat. Detaily v README changelogu. Teď prosím NIC neměň – jen si přečti git log a README, ať máš aktuální kontext pro další zadání. Odpověz jen „OK, mám kontext“.
 ```
+
+## Prompt #9 – 2026-10-21 – Z1: texty UI bez „&“ a lomítok
+
+```text
+ZMĚNA Z1 od klienta (Martin Řehák), 2026-10-21: V textech UI nechce znak "&". Prosím:
+1. Ve všech textech viditelných uživateli (src/main/resources/static/index.html a js/app.js, včetně title a hlášek) nahraď "&" klasickým "a". Např. "Dispečink půjčovny, rezervace a správa inventáře (Martin Řehák)", "Výdej a vrácení", "Inventář a servis", "Kategorie a velikost", "vyžaduje servis a pokutu". Pro konzistenci uprav i komentáře v HTML/JS, kde je "&" místo slova.
+2. Vyhýbej se i podobným znakům, které nahrazují slovo: "/" ve významu "nebo" přepiš slovy (např. "Velikost nebo parametr", "Popis závady nebo škody", "Pokuta stržená z kauce (Kč)", "Číslo OP nebo pasu", "co dokoupit a co vyřadit"). Pomlčky "–" a oddělovač "|" v řádcích s údaji ponech.
+3. Do AGENTS.md přidej pravidlo: v textech UI nepoužívat "&", "/", "+" apod. místo slov, psát celá česká slova.
+4. Do README changelogu zapiš Z1. Spusť testy (docker build --target builder -t ppro-rental-builder . && docker run --rm --name ppro-rental-maven ppro-rental-builder mvn -B test), rebuild aplikace (docker compose -p ppro-rental up -d --build) a commitni jako "fix: texty UI bez znaku & a lomitek (Z1)". NEPUSHUJ. Eshop kontejnery nepoužívej.
+5. Na konci aktualizuj GEMINI-STATUS.md (první řádek STAV: HOTOVO nebo STAV: BLOKOVÁNO) a stručně odpověz, co jsi změnil.
+```
+
+## Prompt #10 – 2026-10-21 – doplnenie Z1: bez anglicizmov
+
+```text
+DOPLNĚNÍ ZMĚNY Z1 (klient, 2026-10-21): Kromě "&" a lomítek klient nechce v textech UI ani anglicismy, pokud nejde o oficiální název (např. Docker, PostgreSQL, Spring Boot, názvy značek vybavení zůstávají). Projdi všechny texty viditelné uživateli (index.html, js/app.js včetně hlášek, toastů, potvrzovacích dialogů, chybových zpráv z backendu, které se zobrazují v UI, a tištěné smlouvy) a anglická slova nahraď českými (např. "status" -> "stav", "OK" -> "v pořádku", "overbooking" -> "překryv rezervací", "reset" -> "obnovit", "info" -> "informace"). Pravidlo doplň do AGENTS.md ke stejnému bodu jako "&" a lomítka a zmiň to v changelogu u Z1. Zbytek postupu beze změny: testy, rebuild, jeden commit "fix: texty UI bez znaku &, lomitek a anglicismu (Z1)" (pokud už jsi commitnul, udělej druhý commit), NEPUSHUJ, na konci GEMINI-STATUS.md.
+```
+
+## Prompt #11 – 2026-10-21 – Z2: české stavy a kompaktný inventár
+
+```text
+ZMĚNA Z2 od klienta (2026-10-21), záložka Inventář:
+1. Štítky stavu na kartách kusů ukazují surové hodnoty enumu (AVAILABLE, IN_SERVICE, RENTED, RESERVED, ...) – v app.js renderInventory: ${item.status}. Zobrazuj české názvy: Volné, V servisu, Půjčeno, Rezervováno (a další stavy obdobně). Udělej jednu sdílenou mapu enum -> český text v app.js a použij ji všude, kde se v UI zobrazuje stav kusu nebo objednávky (karty, přehledy, smlouva, toasty). CSS třídy badge-${item.status} nech podle enumu.
+2. Celou záložku Inventář přeuspořádej tak, aby byl inventář vidět najednou na jedné obrazovce (1920x1080 i notebook 1366x768) bez dlouhého scrollování karet. Místo velkých karet použij kompaktní tabulku nebo hustou mřížku: jeden řádek na kus (inv. číslo, kategorie, velikost, rok, stav jako barevný štítek, poznámka ke stavu zkráceně, tlačítka akcí jako malé ikony s title). Seskup podle kategorie (nadpis kategorie s počty volné/v servisu/půjčeno), případně kategorie vedle sebe ve sloupcích. Filtry a vyhledávání nech nahoře v jedné řádce. Hlavička záložky ať je nízká.
+3. Dodržuj pravidla Z1 (žádné "&", lomítka místo slov ani anglicismy v textech UI).
+4. README changelog (Z2), testy, rebuild (docker compose -p ppro-rental up -d --build), commit "feat: kompaktni prehled inventare a ceske nazvy stavu (Z2)". NEPUSHUJ. Na konci GEMINI-STATUS.md a stručná odpověď.
+```
+
+## Prompt #12 – 2026-10-21 – Z3: preklady app_cz.arb, app_en.arb a prepínač jazyka
+
+```text
+ZMĚNA Z3 od klienta (2026-10-21): překlady a přepínání jazyka. Udělej až po Z1 a Z2 (prompty #9 až #11), jako samostatný commit.
+1. Vytvoř soubory s překlady ve formátu ARB (JSON): src/main/resources/static/i18n/app_cz.arb a src/main/resources/static/i18n/app_en.arb. Obsahují "@@locale" ("cs" a "en") a VŠECHNY texty viditelné v UI (index.html i js/app.js: záložky, nadpisy, popisky, tlačítka, placeholdery, title stránky, toasty, potvrzovací dialogy, prázdné stavy, české názvy stavů ze Z2, tištěná smlouva). Klíče camelCase, u parametrických textů placeholdery ARB stylu {name} a záznam "@klic" s popisem a placeholders.
+2. V app.js malý modul i18n: načte ARB přes fetch, funkce t(klic, params). Statické texty v HTML označ atributy data-i18n, data-i18n-placeholder, data-i18n-title a při změně jazyka je přepiš. Dynamicky renderované části po změně jazyka znovu vykresli. Žádný text UI nesmí zůstat natvrdo v HTML ani JS (jen v ARB).
+3. V hlavičce přidej přepínač jazyka (CZ a EN). Zvolený jazyk ulož do localStorage (klíč "lang", obal try/catch) a při načtení stránky jej použij; výchozí je čeština. Nastavuj i <html lang>.
+4. Formát data a čísel podle jazyka (Intl, cs-CZ a en-GB). Měna zůstává Kč.
+5. Chybové hlášky z backendu zatím zůstávají česky; v README to uveď jako známé omezení.
+6. Pravidla Z1 platí pro české texty v app_cz.arb. V AGENTS.md doplň pravidlo: každý nový text UI přidat do obou ARB souborů, nikdy natvrdo.
+7. README changelog (Z3), testy, rebuild (docker compose -p ppro-rental up -d --build), commit "feat: preklady CZ a EN v ARB a prepinac jazyka (Z3)". NEPUSHUJ. Na konci GEMINI-STATUS.md a stručná odpověď.
+```
+
+## Prompt #13 – 2026-10-21 – Claude preberá Z1 až Z3 (Gemini nereagoval)
+
+```text
+AKTUALIZACE od Claude Code: Protože jsi na prompty #9 až #12 nereagoval, změny Z1, Z2 a Z3 dělám já. Prosím NIC neměň v souborech projektu, dokud ti nenapíšu. Až skončím, pošlu ti souhrn commitů, ať máš kontext. Odpověz jen "OK, čekám".
+```
+
+## Prompt #14 – 2026-10-21 – súhrn Z1 až Z4 pre Gemini
+
+```text
+SOUHRN od Claude Code: Z1 až Z4 jsou hotové a commitnuté (nepushnuto): 9296da0 (Z1 texty bez &, lomítek a anglicismů), 04897d9 (Z2 české stavy, kompaktní inventář, migrace V5), bb92a74 (Z4 hlavička bez emoji a štítku), b26bb1f (Z3 překlady app_cz.arb a app_en.arb, přepínač CZ a EN, a Z4 žádné emoji nikde). Testy 20 z 20 OK. Nová pravidla jsou v AGENTS.md oddíl 6 a 7 – každý nový text UI patří do obou ARB souborů, žádné emoji, žádné "&", lomítka ani anglicismy. Nic neměň, jen si přečti git log, AGENTS.md a README changelog a odpověz "OK, mám kontext".
+```
