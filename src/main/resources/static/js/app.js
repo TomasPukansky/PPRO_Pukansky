@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Orders filter
         document.getElementById('filter-order-status')?.addEventListener('change', loadOrders);
 
-        // Inventory filters & create
+        // Filtry inventáře a založení kusu
         document.getElementById('filter-category')?.addEventListener('change', renderFilteredInventory);
         document.getElementById('filter-status')?.addEventListener('change', renderFilteredInventory);
         document.getElementById('input-search')?.addEventListener('input', renderFilteredInventory);
@@ -457,14 +457,14 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('form-phone-reservation').reset();
             await refreshAllData();
 
-            // Přejít do záložky Výdej & Vrácení
+            // Přejít do záložky výdej a vrácení
             document.querySelector('[data-tab="tab-orders"]').click();
         } catch (err) {
             showToast(err.message, 'error');
         }
     }
 
-    // ================= TAB 3: VÝDEJ & VRÁCENÍ =================
+    // ================= TAB 3: VÝDEJ A VRÁCENÍ =================
 
     async function loadOrders() {
         const status = document.getElementById('filter-order-status').value;
@@ -520,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><strong>${item.inventoryNumber}</strong></td>
                     <td>${item.categoryName}</td>
                     <td>${item.size}</td>
-                    <td>${item.dailyRateSnapshot} Kč/den</td>
+                    <td>${item.dailyRateSnapshot} Kč za den</td>
                     <td>${item.rentalPrice} Kč</td>
                     <td><span class="badge-status badge-${item.status}">${item.status}</span></td>
                     <td style="color:${item.lateFee > 0 ? '#ef4444' : 'inherit'}; font-weight:${item.lateFee > 0 ? '700' : 'normal'}">${item.lateFee} Kč</td>
@@ -662,7 +662,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             document.getElementById('swap-order-id').value = orderId;
             document.getElementById('swap-rental-item-id').value = rentalItemId;
-            document.getElementById('swap-info').innerHTML = `Výměna kusu <strong>${inv}</strong> za jiný volný kus stejné kategorie/velikosti.`;
+            document.getElementById('swap-info').innerHTML = `Výměna kusu <strong>${inv}</strong> za jiný volný kus stejné kategorie a velikosti.`;
 
             const res = await fetch(`${API}/orders/items/${rentalItemId}/available-swaps`);
             const freeItems = await res.json();
@@ -796,7 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <strong>ZÁKAZNÍK (Nájemce):</strong><br>
                         Jméno: <strong>${o.customerName}</strong><br>
                         Telefon: ${o.customerPhone}<br>
-                        Číslo OP / Pas: ${o.customerIdCard}
+                        Číslo OP nebo pasu: ${o.customerIdCard}
                     </div>
                 </div>
 
@@ -817,7 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <td><strong>${i.inventoryNumber}</strong></td>
                                 <td>${i.categoryName}</td>
                                 <td>${i.size}</td>
-                                <td>${i.dailyRateSnapshot} Kč/den</td>
+                                <td>${i.dailyRateSnapshot} Kč za den</td>
                                 <td>${i.rentalPrice} Kč</td>
                             </tr>
                         `).join('')}
@@ -852,7 +852,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ================= TAB 4: INVENTÁŘ & SERVIS =================
+    // ================= TAB 4: INVENTÁŘ A SERVIS =================
 
     async function loadInventory() {
         try {
@@ -1043,7 +1043,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `).join('');
         } catch (err) {
-            el.innerHTML = '<p class="error-text">Chyba reportu</p>';
+            el.innerHTML = '<p class="error-text">Chyba přehledu</p>';
         }
     }
 
@@ -1066,7 +1066,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `).join('');
         } catch (err) {
-            el.innerHTML = '<p class="error-text">Chyba reportu</p>';
+            el.innerHTML = '<p class="error-text">Chyba přehledu</p>';
         }
     }
 

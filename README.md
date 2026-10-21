@@ -342,6 +342,8 @@ Aktuální stav: **20 testů, 0 selhání** (2026-10-07).
 
 ## 8. Deník postupu a změn (Changelog)
 
+- **2026-10-21 (Z1 – texty UI podle klienta)**:
+  - Ve všech textech UI nahrazen znak „&“ slovem „a“, lomítka ve významu „nebo“ přepsána slovy, odstraněny anglicismy (swap, set, report). Pravidlo zapsáno do AGENTS.md (oddíl 6).
 - **2026-10-07 večer (Dokončení a ověření dema – Claude Code)**:
   - Odstranění zastaralých tříd z první iterace (`CustomerService`, `PricingService`, `ReportService`, `CustomerController`, `PriceRuleController`, nepoužívané DTO a 3 staré testy) – nahrazeny `RentalService(Impl)`, `CustomerAndPriceService(Impl)`, `PricingPolicy` a novými kontrolery.
   - Migrace V3: sjednocení typů ID na `BIGINT` (entity používají `Long`), `rental_items` už nemaže kaskádou (historie se nemaže).

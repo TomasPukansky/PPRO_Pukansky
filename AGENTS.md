@@ -94,3 +94,10 @@ Při návrhu a psaní kódu musí asistent dodržovat povinné minimum stanoven�
 - Odpovídat věcně, srozumitelně a strukturovaně v češtině.
 - Vždy odkazovat na soubory formou Markdown odkazů (`[cesta/soubor](file:///...)`).
 - Při nejasnostech ohledně zásadních technických voleb (např. konkrétní programovací jazyk/framework) předložit doporučení a konzultovat s uživatelem.
+
+---
+
+## 6. Texty v uživatelském rozhraní (požadavek klienta Z1)
+
+- V textech UI nepoužívat znaky místo slov: místo „&“ psát „a“, místo lomítka ve významu „nebo“ psát „nebo“, nepoužívat „+“ apod. Pomlčka „–“ a oddělovač „|“ mezi údaji jsou povoleny.
+- Nepoužívat anglicismy (např. swap, set, report, status), pokud nejde o oficiální název (Docker, PostgreSQL, Spring Boot, značky vybavení). Psát celá česká slova.
