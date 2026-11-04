@@ -37,6 +37,8 @@
   "phoneSectionItems": "3. Requested equipment (category and size)",
   "phoneItemsHint": "The customer says on the phone e.g. \"skis 170 cm and boots 42\". The system finds a free item without conflicts.",
   "selectCategory": "-- Select category --",
+  "selectSize": "-- Select category first --",
+  "selectSizeChoose": "-- Select size --",
   "btnRemoveItem": "× Remove",
   "btnAddItem": "+ Add another item to the set",
   "phoneSectionDiscount": "4. Discount and note",

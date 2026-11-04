@@ -106,3 +106,5 @@ ktorý sa riadi [AGENTS.md](AGENTS.md) a [README.md](README.md) (SSOT). Claude k
 - Sivé nápovedy šablóny zmazané (3 odseky), stĺpec „Řešení“ pri Z1–Z4 preložený do slovenčiny (citáty klienta česky). Word OK, 3 strany.
 - Ďalej: docx je kompletný; nové Z5.. a R15.. dopisovať po slovensky.
 - Používateľ pri skúšaní rezervácie narazil na obsadené kusy → Claude sám pridal migráciu V6 (51 kusov, inventár 16 → 67), testy 20/20, app prebuildovaná.
+- Rezervácia stále nešla: veľkosť bola voľný text s presnou zhodou („170“ ≠ „170 cm“). Na prianie používateľa veľkosť ako rozbaľovací zoznam
+  podľa kategórie (`fillSizeSelect` v app.js), hláška bez lomky. Používateľ má Operu (nie Chrome) – Claude jeho prehliadač nevidí.

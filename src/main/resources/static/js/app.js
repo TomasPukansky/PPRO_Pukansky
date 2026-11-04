@@ -148,6 +148,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('btn-set-weekend')?.addEventListener('click', setWeekendDates);
         document.getElementById('btn-set-tomorrow')?.addEventListener('click', setTomorrowDates);
         document.getElementById('btn-add-res-item')?.addEventListener('click', addReservationItemRow);
+        document.getElementById('reservation-items-container')?.addEventListener('change', e => {
+            if (e.target.classList.contains('res-item-category')) {
+                fillSizeSelect(e.target.closest('.reservation-item-row').querySelector('.res-item-size'), e.target.value);
+            }
+        });
         document.getElementById('form-phone-reservation')?.addEventListener('submit', handleCreateReservation);
 
         // Orders filter
@@ -463,6 +468,28 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('res-end').value = formatInputDateTime(tomorrowEnd);
     }
 
+    // Rozbalovací seznam velikostí podle kusů vybrané kategorie (kromě vyřazených)
+    async function fillSizeSelect(select, categoryId) {
+        if (!select) return;
+        if (!categoryId) {
+            select.innerHTML = `<option value="">${t('selectSize')}</option>`;
+            select.disabled = true;
+            return;
+        }
+        try {
+            const res = await fetch(`${API}/items?categoryId=${encodeURIComponent(categoryId)}`);
+            const items = await res.json();
+            const sizes = [...new Set(items.filter(i => i.status !== 'RETIRED').map(i => i.size))]
+                .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+            select.innerHTML = `<option value="">${t('selectSizeChoose')}</option>` +
+                sizes.map(s => { const v = String(s).replace(/[&<>"]/g, c => `&#${c.charCodeAt(0)};`); return `<option value="${v}">${v}</option>`; }).join('');
+            select.disabled = false;
+        } catch (err) {
+            console.error(err);
+            showToast(t('errLoadCategories'), 'error');
+        }
+    }
+
     function addReservationItemRow() {
         const container = document.getElementById('reservation-items-container');
         const count = container.querySelectorAll('.reservation-item-row').length;
@@ -477,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         row.innerHTML = `
             <select class="res-item-category" required>${options}</select>
-            <input type="text" class="res-item-size" placeholder="${t('phSize')}" data-i18n-placeholder="phSize" required>
+            <select class="res-item-size" required disabled><option value="">${t('selectSize')}</option></select>
             <button type="button" class="btn btn-sm btn-danger btn-remove-res-item" data-i18n="btnRemoveItem">${t('btnRemoveItem')}</button>
         `;
 
@@ -546,6 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Reset form
             document.getElementById('form-phone-reservation').reset();
+            document.querySelectorAll('.reservation-item-row .res-item-size').forEach(s => fillSizeSelect(s, ''));
             await refreshAllData();
 
             // Přejít do záložky výdej a vrácení

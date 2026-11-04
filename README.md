@@ -342,6 +342,9 @@ Aktuální stav: **20 testů, 0 selhání** (2026-10-07).
 
 ## 8. Deník postupu a změn (Changelog)
 
+- **2026-11-04 (Velikost v rezervaci jako rozbalovací seznam)**:
+  - Ve formuláři telefonické rezervace se velikost vybírá ze seznamu velikostí, které v dané kategorii skutečně existují (dříve volný text – „170“ se neshodovalo s „170 cm“ a rezervace hlásila, že není volný kus).
+  - Hláška backendu bez lomítka („v dané kategorii a velikosti“). Nové klíče `selectSize`, `selectSizeChoose` v obou ARB.
 - **2026-11-04 (Více kusů pro zkoušení rezervací)**:
   - Migrace `V6__seed_more_equipment.sql`: 51 nových kusů ve všech kategoriích a velikostech (inventář 16 → 67 kusů), aby se při zkoušení rezervací nenarazilo na obsazené vybavení.
 

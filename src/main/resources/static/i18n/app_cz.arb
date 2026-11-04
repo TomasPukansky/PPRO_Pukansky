@@ -37,6 +37,8 @@
   "phoneSectionItems": "3. Požadované vybavení (kategorie a velikost)",
   "phoneItemsHint": "Zákazník po telefonu řekne např. „lyže 170 cm a boty 42“. Systém sám najde volný kus bez kolizí.",
   "selectCategory": "-- Vyberte kategorii --",
+  "selectSize": "-- Nejdříve vyberte kategorii --",
+  "selectSizeChoose": "-- Vyberte velikost --",
   "btnRemoveItem": "× Odebrat",
   "btnAddItem": "+ Přidat další kus do sady",
   "phoneSectionDiscount": "4. Sleva a poznámka",

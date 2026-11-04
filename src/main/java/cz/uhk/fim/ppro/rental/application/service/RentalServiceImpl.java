@@ -500,7 +500,7 @@ public class RentalServiceImpl implements RentalService {
         }
 
         throw new BusinessValidationException("V požadovaném termínu (" + start.toLocalDate() + " - " + end.toLocalDate() +
-                ") není k dispozici žádný volný kus v dané kategorii/velikosti.");
+                ") není k dispozici žádný volný kus v dané kategorii a velikosti.");
     }
 
     private void validateItemAvailabilityForPeriod(EquipmentItem item, OffsetDateTime start, OffsetDateTime end, Long excludeOrderId) {
