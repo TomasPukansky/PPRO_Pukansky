@@ -95,3 +95,14 @@ ktorý sa riadi [AGENTS.md](AGENTS.md) a [README.md](README.md) (SSOT). Claude k
   overené headless Edge cez DevTools (CZ aj EN, jazyk sa po reloade pamätá, inventár na jednu obrazovku pri 1366×768).
   Docx: Z3 a Z4 = hotovo. Gemini dostal súhrn (prompt #14). Commity Z1–Z4 sú **nepushnuté**.
 - 2026-10-21 push `f885e35` na origin; reset DB zablokovaný, app len rebuild + recreate.
+
+### 2026-11-04
+- Docker spustený, app beží. Vypĺňame docx postupne (krok po kroku, každý krok najprv návrh, potom zápis).
+- **Pokyn:** nové texty do docx písať **po slovensky** (tabuľka Z1–Z4 zostala česky).
+- Hlavička: Půjčovna vybavení Hory a voda, D, Tomáš Pukanský, GitHub URL, dátum 4. 11. 2026.
+- Oddiel 2: R1–R14 (vzorové R1, R2 prepísané, pridané 4 riadky), Z3 odkazuje na R14. Záloha `...docx.bak-2026-11-04`.
+  Skripty: scratchpad `docx-lib.ps1` (úprava `word/document.xml` priamo v ZIP; .ps1 treba uložiť s BOM kvôli PS 5.1).
+- Oddiel 1 Popis riešenia zapísaný (2 podnadpisy, 4 odseky, 3 odrážky; sivá nápoveda oddielu 1 odstránená). Word súbor otvorí, 4 strany.
+- Sivé nápovedy šablóny zmazané (3 odseky), stĺpec „Řešení“ pri Z1–Z4 preložený do slovenčiny (citáty klienta česky). Word OK, 3 strany.
+- Ďalej: docx je kompletný; nové Z5.. a R15.. dopisovať po slovensky.
+- Používateľ pri skúšaní rezervácie narazil na obsadené kusy → Claude sám pridal migráciu V6 (51 kusov, inventár 16 → 67), testy 20/20, app prebuildovaná.

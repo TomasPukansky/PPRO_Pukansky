@@ -342,6 +342,9 @@ Aktuální stav: **20 testů, 0 selhání** (2026-10-07).
 
 ## 8. Deník postupu a změn (Changelog)
 
+- **2026-11-04 (Více kusů pro zkoušení rezervací)**:
+  - Migrace `V6__seed_more_equipment.sql`: 51 nových kusů ve všech kategoriích a velikostech (inventář 16 → 67 kusů), aby se při zkoušení rezervací nenarazilo na obsazené vybavení.
+
 - **2026-10-21 (Z3 – překlady CZ a EN, Z4 – žádné emoji)**:
   - Texty UI přesunuty do `static/i18n/app_cz.arb` a `app_en.arb` (241 klíčů), v hlavičce přepínač CZ a EN, zvolený jazyk se ukládá do `localStorage` (klíč `lang`) a nastavuje `<html lang>`. Data a čísla se formátují podle jazyka (cs-CZ, en-GB), měna Kč a CZK.
   - Doplnění Z4: odstraněny všechny emoji z celé aplikace (nadpisy, tlačítka, hlášky, smlouva); akce v inventáři jako malá textová tlačítka, popis stavu kusu v bublině řádku.
