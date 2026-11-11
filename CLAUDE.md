@@ -57,24 +57,32 @@ ktorý sa riadi [AGENTS.md](AGENTS.md) a [README.md](README.md) (SSOT). Claude k
 - Push iba po schválení: pred pushom dať používateľovi rýchly sumár (commity, zmeny), on potvrdí. (pokyn 2026-10-07)
 - Handoff: Gemini po dokončení vytvorí `GEMINI-STATUS.md` (1. riadok `STAV: HOTOVO` / `STAV: BLOKOVÁNO`). Až potom Claude berie prvý build dema za ukončený a preberá overenie. (pokyn 2026-10-07)
 
-## ▶ STAV NA POKRAČOVANIE (aktualizované 2026-10-21, koniec session)
+## ▶ STAV NA POKRAČOVANIE (aktualizované 2026-11-11)
 
-- **Spätná väzba klienta Z1–Z4 HOTOVÁ** (robil Claude, Gemini na prompty #9–#12 nereagoval):
-  Z1 texty bez „&“, lomiek a anglicizmov · Z2 české stavy + kompaktný inventár na 1 obrazovku + migrácia V5 ·
-  Z3 preklady `static/i18n/app_cz.arb` a `app_en.arb` (241 kľúčov), prepínač CZ/EN, localStorage `lang` ·
-  Z4 **žiadne emoji nikde**, bez ikony a štítku vľavo hore. Pravidlá v AGENTS.md oddiel 6 a 7.
-- Build OK, **20/20 testov OK**. Git: **pushnuté** na origin/main `f885e35` (2026-10-21, so súhlasom používateľa);
-  lokálne navyše len tento zápis do denníka (nepushnutý).
-- Aplikácia beží (`docker compose -p ppro-rental up -d` → http://localhost:8080). Reset s čistou DB (`bash ../ppro-up.sh`)
-  Claude Code auto mode zablokoval (`down -v`) – používateľ ho môže spustiť sám cez `! bash C:/Users/mento/Documents/skola/PRPA/ppro-up.sh`.
-- Dokumentácia docx: tabuľka 3 „Změny požadované klientem“ = Z1–Z4 (hotovo). Oddiely 1 (Popis řešení) a 2 (Rozhodnutí R1..)
-  sú stále len šablóna – čaká na používateľa. Záloha pôvodného docx: `PPRO-dokumentace-sablona-v1.docx.bak-2026-10-21`.
-- Gemini: posledný prompt #14 (súhrn Z1–Z4, nič nemeniť). Ak nereaguje, Claude robí prácu sám a priebeh píše do chatu
-  v Antigravity („INFO od Claude Code“), aby ho používateľ videl. agentapi nevie chat otvoriť ani schvaľovať príkazy.
-- Overenie UI: headless Edge cez DevTools (`--remote-debugging-port`, skript v scratchpade) – screenshoty CZ/EN pri 1366×768.
-- Známe obmedzenia: hlášky z backendu a názvy kategórií (dáta) zostávajú česky aj v EN; v matici „0 ks“ zelenou;
-  výmena ponúka aj iné veľkosti; kusy v servise nejdú rezervovať ani na budúci termín.
-- **Ďalej:** ďalšia spätná väzba klienta (Z5..) alebo doplniť docx oddiely 1 a 2.
+- **Klient Z1–Z4 hotové** (texty bez „&“, lomiek a anglicizmov; české stavy a kompaktný inventár; CZ a EN v ARB; žiadne emoji).
+  Pravidlá v AGENTS.md oddiel 6 a 7.
+- **Od 2026-11-04 navyše** (robil Claude sám, Gemini dostal len „INFO od Claude Code“):
+  migrácia **V6** – inventár 16 → 67 kusov (`2bd063d`); veľkosť v telefonickej rezervácii je **rozbaľovací zoznam** podľa kategórie
+  (`fillSizeSelect` v app.js, kľúče `selectSize`, `selectSizeChoose`) – príčina chyby bola presná zhoda textu „170“ ≠ „170 cm“ (`36c5e74`).
+  Používateľ potvrdil, že rezervácia už funguje.
+- Build OK, **20/20 testov**. Git: všetko **pushnuté** na origin/main `36c5e74` (2026-11-04, na pokyn používateľa); lokálne len tento zápis.
+- **Dokumentácia docx je kompletná** (`C:\Users\mento\Documents\skola\PPRO\PPRO-dokumentace-sablona-v1.docx`):
+  hlavička (Tomáš Pukanský, D, GitHub URL), oddiel 1 Popis riešenia, oddiel 2 R1–R14, oddiel 3 Z1–Z4, sivé nápovedy zmazané.
+  Nový text **po slovensky** (citáty klienta česky, nadpisy šablóny česky). Zálohy `.bak-2026-10-21`, `.bak-2026-11-04`.
+  Docx zatiaľ **neobsahuje** V6 ani rozbaľovací zoznam – ak to bude požiadavka klienta, pridať ako Z5.
+- **Otvorené:** používateľ hlási, že mu „nefunguje scroll down“ – nie je jasné čo (zoznam veľkostí v headless Edge funguje,
+  pozri nižšie). Čaká sa na upresnenie: čo presne, v ktorej záložke, čo sa deje. Podozrenie: Opera (nie Chrome) a cache
+  (Ctrl+F5), alebo nečitateľné možnosti v tmavom `select` (CSS nemá `color-scheme: dark` ani štýl `option`).
+- Používateľovi vysvetlené vrátenie: záložka Výdej a vrácení → Vydat zákazníkovi (kaucia) → pri kuse Vrátit kus (poškodenie, pokuta) → Potvrdit.
+- Aplikácia: `docker compose -p ppro-rental up -d` → http://localhost:8080 (Docker Desktop treba niekedy spustiť).
+  Reset s čistou DB (`down -v`) auto mode blokuje – používateľ: `! bash C:/Users/mento/Documents/skola/PRPA/ppro-up.sh`.
+- **Nástroje** (trvalo v `C:\Users\mento\Documents\skola\PRPA\nastroje\`): `docx-lib.ps1` (úprava docx priamo v ZIP; .ps1 ukladať
+  s BOM, reťazce s „ “ v jednoduchých úvodzovkách), `cdp-check.mjs` + `steps*.json` (headless Edge cez DevTools:
+  `node cdp-check.mjs <výstupný priečinok> <steps.json>`). Claude in Chrome nefunguje – používateľ má Operu.
+- Gemini: konverzácia `3a5569dd-…`, skript `../agy-send.ps1`. Ak nereaguje, Claude robí prácu sám a píše INFO do chatu.
+- Známe obmedzenia: hlášky z backendu a názvy kategórií zostávajú česky aj v EN; v matici „0 ks“ zelenou;
+  výmena ponúka aj iné veľkosti; kusy v servise nejdú rezervovať ani na budúci termín; formulár „Nový kus“ má veľkosť stále ako text.
+- **Ďalej:** vyriešiť „scroll down“ po upresnení, potom ďalšia spätná väzba klienta (Z5..) a jej zápis do docx.
 
 ### 2026-10-21
 - Demo spustené (`docker compose -p ppro-rental up -d`), HTTP 200.
@@ -108,3 +116,6 @@ ktorý sa riadi [AGENTS.md](AGENTS.md) a [README.md](README.md) (SSOT). Claude k
 - Používateľ pri skúšaní rezervácie narazil na obsadené kusy → Claude sám pridal migráciu V6 (51 kusov, inventár 16 → 67), testy 20/20, app prebuildovaná.
 - Rezervácia stále nešla: veľkosť bola voľný text s presnou zhodou („170“ ≠ „170 cm“). Na prianie používateľa veľkosť ako rozbaľovací zoznam
   podľa kategórie (`fillSizeSelect` v app.js), hláška bez lomky. Používateľ má Operu (nie Chrome) – Claude jeho prehliadač nevidí.
+- Používateľ: rezervácia funguje → **push** `f885e35..36c5e74` na jeho pokyn. Hlási „nefunguje scroll down“ (nejasné).
+  Headless Edge: zoznam veľkostí sa naplní (vesty L, M, S, XL; snowboardy 145–160 cm aj v pridanom riadku). Čaká sa na upresnenie.
+  Vysvetlený postup vrátenia vybavenia. Pomocné skripty presunuté zo scratchpadu do `..\nastroje\`.
